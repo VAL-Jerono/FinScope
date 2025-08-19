@@ -1,22 +1,5 @@
-st.subheader("📱 Mobile & Digital Payments")
-    
-    mobile_payment = st.radio(
-        "Uses Mobile Payments?",
-        ["No", "Yes"],
-        help="Mobile payment adoption"
-    )
-    
-    mobile_payment_bill = st.radio(
-        "Pays Bills via Mobile?",
-        ["No", "Yes"],
-        help="Uses mobile for bill payments"
-    )
-    
-    govt_digital_pay = st.radio(
-        "Receives Government Payments Digitally?",
-        ["No", "Yes"],
-        help="Government digital payment recipient"
-    )import streamlit as st
+import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -34,6 +17,27 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+st.subheader("📱 Mobile & Digital Payments")
+
+mobile_payment = st.radio(
+    "Uses Mobile Payments?",
+    ["No", "Yes"],
+    help="Mobile payment adoption"
+)
+
+mobile_payment_bill = st.radio(
+    "Pays Bills via Mobile?",
+    ["No", "Yes"],
+    help="Uses mobile for bill payments"
+)
+
+govt_digital_pay = st.radio(
+    "Receives Government Payments Digitally?",
+    ["No", "Yes"],
+    help="Government digital payment recipient"
+)
+
 
 # Custom CSS for better styling
 st.markdown("""
