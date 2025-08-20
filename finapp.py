@@ -1,668 +1,492 @@
 import streamlit as st
-import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import joblib
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 import warnings
 warnings.filterwarnings('ignore')
 
-# Page config
+# Set page config
 st.set_page_config(
-    page_title="Financial Inclusion Risk Predictor",
+    page_title="Financial Inclusion Predictor",
     page_icon="🏦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.subheader("📱 Mobile & Digital Payments")
-
-mobile_payment = st.radio(
-    "Uses Mobile Payments?",
-    ["No", "Yes"],
-    help="Mobile payment adoption"
-)
-
-mobile_payment_bill = st.radio(
-    "Pays Bills via Mobile?",
-    ["No", "Yes"],
-    help="Uses mobile for bill payments"
-)
-
-govt_digital_pay = st.radio(
-    "Receives Government Payments Digitally?",
-    ["No", "Yes"],
-    help="Government digital payment recipient"
-)
-
-
 # Custom CSS for better styling
 st.markdown("""
 <style>
     .main-header {
-        font-size: 3rem;
-        color: #1f4e79;
+        font-size: 2.5rem;
+        color: #1f77b4;
         text-align: center;
-        margin-bottom: 2rem;
-        font-weight: 700;
+        margin-bottom: 1rem;
+        font-weight: bold;
     }
-    .mission-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 15px;
-        color: white;
-        margin: 2rem 0;
-        text-align: center;
-    }
-    .impact-metric {
-        background: #f8f9fa;
-        padding: 1.5rem;
+    .metric-card {
+        background-color: #f0f2f6;
+        padding: 1rem;
         border-radius: 10px;
-        text-align: center;
-        border-left: 5px solid #3498db;
-        margin: 1rem 0;
+        border-left: 5px solid #1f77b4;
+        margin: 0.5rem 0;
     }
-    .risk-high {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    .success-metric {
+        border-left: 5px solid #28a745;
+    }
+    .warning-metric {
+        border-left: 5px solid #ffc107;
+    }
+    .danger-metric {
+        border-left: 5px solid #dc3545;
+    }
+    .feature-importance {
+        background: linear-gradient(90deg, #1f77b4, #ff7f0e);
         color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 1rem 0;
-    }
-    .risk-medium {
-        background: linear-gradient(135deg, #f39c12, #e67e22);
-        color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 1rem 0;
-    }
-    .risk-low {
-        background: linear-gradient(135deg, #27ae60, #229954);
-        color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 1rem 0;
-    }
-    .stSelectbox > div > div {
-        background-color: #f8f9fa;
-    }
-    .deployment-card {
-        background: #ffffff;
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid #e0e6ed;
-        margin: 1rem 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 0.2rem 0.5rem;
+        border-radius: 5px;
+        margin: 0.1rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Mock model for demonstration (replace with your actual trained model)
-class MockRandomForestModel:
-    def __init__(self):
-        self.feature_importances_ = {
-            'biz_loan_source': 0.108,
-            'biz_loan': 0.086,
-            'digital_pay_acc': 0.085,
-            'digital_engagement_score': 0.071,
-            'prefer_digital_acc': 0.066,
-            'credit_card': 0.056,
-            'mobile_pay_s_r': 0.049,
-            'loan_purpose_group': 0.045,
-            'govt_services_score': 0.041,
-            'mobile_payment': 0.028
-        }
-    
-    def predict_proba(self, X):
-        # Mock prediction based on feature values
-        # In reality, load your actual model: joblib.load('financial_inclusion_model.pkl')
-        
-        # Simple logic for demonstration
-        risk_score = 0.6  # Base risk
-        
-        # Business loan factors (most important)
-        if hasattr(X, 'iloc') and len(X) > 0:
-            row = X.iloc[0] if hasattr(X, 'iloc') else X
-            
-            # Digital engagement reduces risk significantly
-            if 'digital_engagement_score' in row:
-                risk_score -= row['digital_engagement_score'] * 0.3
-            
-            # Business loan source impacts risk
-            if 'biz_loan_source' in row and row['biz_loan_source'] == 'Traditional Bank':
-                risk_score -= 0.2
-            
-            # Credit card ownership reduces risk
-            if 'credit_card' in row and row['credit_card'] == 1:
-                risk_score -= 0.15
-            
-            # Mobile payment usage reduces risk
-            if 'mobile_payment_usage' in row and row['mobile_payment_usage'] == 'High':
-                risk_score -= 0.1
-        
-        # Ensure probability is between 0 and 1
-        risk_score = max(0.05, min(0.95, risk_score))
-        return np.array([[1-risk_score, risk_score]])
+# Title
+st.markdown('<h1 class="main-header">🏦 Financial Inclusion Prediction Dashboard</h1>', unsafe_allow_html=True)
+st.markdown("**Predict account ownership probability using Global Findex 2024 data**")
 
-# Initialize mock model
-@st.cache_resource
-def load_model():
-    return MockRandomForestModel()
+# Load sample data (you would replace this with your actual data loading)
+@st.cache_data
+def load_sample_data():
+    """Load and prepare sample data - replace with your actual data loading logic"""
+    np.random.seed(42)
+    
+    regions = ['Sub-Saharan Africa', 'East Asia & Pacific', 'Europe & Central Asia', 
+               'Latin America & Caribbean', 'Middle East & North Africa', 'South Asia', 'North America']
+    
+    countries_by_region = {
+        'Sub-Saharan Africa': ['Kenya', 'Nigeria', 'South Africa', 'Ghana', 'Tanzania', 'Uganda'],
+        'East Asia & Pacific': ['China', 'Indonesia', 'Thailand', 'Philippines', 'Vietnam', 'Malaysia'],
+        'Europe & Central Asia': ['Germany', 'France', 'United Kingdom', 'Poland', 'Russia', 'Turkey'],
+        'Latin America & Caribbean': ['Brazil', 'Mexico', 'Argentina', 'Colombia', 'Chile', 'Peru'],
+        'Middle East & North Africa': ['Egypt', 'Saudi Arabia', 'Morocco', 'UAE', 'Jordan', 'Tunisia'],
+        'South Asia': ['India', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Afghanistan'],
+        'North America': ['United States', 'Canada']
+    }
+    
+    # Generate sample data
+    n_samples = 1000
+    data = {
+        'biz_loan_source': np.random.uniform(0, 1, n_samples),
+        'biz_loan': np.random.uniform(0, 1, n_samples),
+        'emergency_funds': np.random.uniform(0, 1, n_samples),
+        'digital_pay': np.random.uniform(0, 1, n_samples),
+        'digital_pay_acc': np.random.uniform(0, 1, n_samples),
+        'loan_purpose_group': np.random.uniform(0, 1, n_samples),
+        'mobile_pay_s_r': np.random.uniform(0, 1, n_samples),
+        'prefer_digital_fin': np.random.uniform(0, 1, n_samples),
+        'digital_payment_other': np.random.uniform(0, 1, n_samples),
+        'govt_payment_recv': np.random.uniform(0, 1, n_samples),
+        'saved_any': np.random.uniform(0, 1, n_samples),
+        'mobile_payment_bill': np.random.uniform(0, 1, n_samples),
+        'borrowed_any': np.random.uniform(0, 1, n_samples),
+        'saved_for_purchase': np.random.uniform(0, 1, n_samples),
+        'loan_purpose': np.random.uniform(0, 1, n_samples),
+        'age': np.random.randint(18, 80, n_samples),
+        'income_level': np.random.choice([1, 2, 3, 4], n_samples),
+        'education_level': np.random.choice([1, 2, 3, 4], n_samples),
+        'region': np.random.choice(regions, n_samples),
+        'has_account': np.random.choice([0, 1], n_samples, p=[0.38, 0.62])
+    }
+    
+    df = pd.DataFrame(data)
+    
+    # Add country based on region
+    df['country'] = df['region'].apply(lambda x: np.random.choice(countries_by_region[x]))
+    
+    return df, countries_by_region
 
-model = load_model()
+# Train model function
+@st.cache_data
+def train_model(df):
+    """Train the Random Forest model"""
+    feature_cols = ['biz_loan_source', 'biz_loan', 'emergency_funds', 'digital_pay', 
+                   'digital_pay_acc', 'loan_purpose_group', 'mobile_pay_s_r', 
+                   'prefer_digital_fin', 'digital_payment_other', 'govt_payment_recv',
+                   'saved_any', 'mobile_payment_bill', 'borrowed_any', 'saved_for_purchase',
+                   'loan_purpose', 'age', 'income_level', 'education_level']
+    
+    X = df[feature_cols]
+    y = df['has_account']
+    
+    # Handle missing values
+    imputer = SimpleImputer(strategy='median')
+    X_imputed = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+    
+    # Train model
+    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf_model.fit(X_imputed, y)
+    
+    # Feature importance
+    importance_df = pd.DataFrame({
+        'feature': feature_cols,
+        'importance': rf_model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    
+    return rf_model, imputer, importance_df, feature_cols
 
-# Header
-st.markdown('<h1 class="main-header">🏦 Financial Inclusion Risk Predictor</h1>', unsafe_allow_html=True)
+# Load data and train model
+df, countries_by_region = load_sample_data()
+model, imputer, feature_importance, feature_cols = train_model(df)
 
-# Mission Statement
-st.markdown("""
-<div class="mission-box">
-    <h2>Our Mission: Banking the Unbanked</h2>
-    <p>Helping 1.4 billion adults worldwide gain access to financial services through AI-powered risk prediction and targeted outreach.</p>
-    <p><strong>Model Performance: 98.33% AUC | Predicting Financial Exclusion Risk</strong></p>
-</div>
-""", unsafe_allow_html=True)
+# Sidebar for user inputs
+st.sidebar.header("🔧 Model Configuration")
 
-# Sidebar for inputs
-st.sidebar.header("🎯 Individual Risk Assessment")
-st.sidebar.markdown("Enter details to predict financial inclusion risk and get targeted recommendations.")
+# Region and Country selection
+selected_region = st.sidebar.selectbox(
+    "Select Region:",
+    options=list(countries_by_region.keys()),
+    index=0
+)
 
-# Input fields based on your actual features
-with st.sidebar:
-    st.subheader("🌍 Geographic Context")
+selected_country = st.sidebar.selectbox(
+    "Select Country:",
+    options=countries_by_region[selected_region],
+    index=0
+)
+
+st.sidebar.markdown("---")
+st.sidebar.header("👤 Individual Prediction")
+
+# Create input form
+with st.sidebar.form("prediction_form"):
+    st.subheader("Financial Profile")
     
-    region = st.selectbox(
-        "Region",
-        ["East Asia & Pacific", "Europe & Central Asia", "Latin America & Caribbean", 
-         "Middle East & North Africa", "North America", "South Asia", "Sub-Saharan Africa"],
-        help="Geographic region affects financial inclusion patterns significantly"
-    )
+    # Business & Lending
+    biz_loan_source = st.slider("Business Loan Access", 0.0, 1.0, 0.5, 0.1)
+    biz_loan = st.slider("Business Loan Usage", 0.0, 1.0, 0.3, 0.1)
+    emergency_funds = st.slider("Emergency Fund Access", 0.0, 1.0, 0.4, 0.1)
     
-    income_group = st.selectbox(
-        "Income Group",
-        ["High income", "Upper middle income", "Lower middle income", "Low income"],
-        help="Country income level impacts financial infrastructure availability"
-    )
+    # Digital Financial Services
+    digital_pay = st.slider("Digital Payment Usage", 0.0, 1.0, 0.6, 0.1)
+    digital_pay_acc = st.slider("Digital Payment Account", 0.0, 1.0, 0.5, 0.1)
+    mobile_pay_s_r = st.slider("Mobile Payment Send/Receive", 0.0, 1.0, 0.4, 0.1)
     
-    st.subheader("👥 Demographics")
+    # Demographics
+    age = st.number_input("Age", min_value=18, max_value=80, value=35)
+    income_level = st.selectbox("Income Level", [1, 2, 3, 4], index=1)
+    education_level = st.selectbox("Education Level", [1, 2, 3, 4], index=1)
     
-    demo_group = st.selectbox(
-        "Demographic Group",
-        ["all", "men", "women", "ages 15-24", "ages 25+", "poorest 40%", "richest 60%"],
-        help="Demographic segment for targeted analysis"
-    )
+    # Additional features (simplified for UI)
+    loan_purpose_group = st.slider("Loan Purpose Clarity", 0.0, 1.0, 0.3, 0.1)
+    prefer_digital_fin = st.slider("Digital Finance Preference", 0.0, 1.0, 0.5, 0.1)
+    digital_payment_other = st.slider("Other Digital Payments", 0.0, 1.0, 0.3, 0.1)
+    govt_payment_recv = st.slider("Government Payment Receipt", 0.0, 1.0, 0.2, 0.1)
+    saved_any = st.slider("Any Savings", 0.0, 1.0, 0.4, 0.1)
+    mobile_payment_bill = st.slider("Mobile Bill Payment", 0.0, 1.0, 0.3, 0.1)
+    borrowed_any = st.slider("Any Borrowing", 0.0, 1.0, 0.3, 0.1)
+    saved_for_purchase = st.slider("Saved for Purchase", 0.0, 1.0, 0.3, 0.1)
+    loan_purpose = st.slider("Loan Purpose Score", 0.0, 1.0, 0.2, 0.1)
     
-    demo_subgroup = st.selectbox(
-        "Demographic Subgroup",
-        ["urban", "rural", "in laborforce", "out of laborforce", 
-         "prim edu or less", "secondary edu or more"],
-        help="Detailed demographic classification"
-    )
-    
-    st.subheader("📊 Business & Loan Profile")
-    
-    biz_loan_source = st.selectbox(
-        "Business Loan Source",
-        ["bank or credit union", "employer", "family or friends", "microfinance institution", 
-         "informal lender", "store credit", "other", "multiple sources"],
-        help="Source of business financing affects default risk significantly"
-    )
-    
-    has_biz_loan = st.radio(
-        "Has Business Loan?",
-        ["No", "Yes"],
-        help="Business loan status is the 2nd most important feature"
-    )
-    
-    loan_purpose_group = st.selectbox(
-        "Loan Purpose Group",
-        ["business", "personal", "education", "home", "agriculture", "emergency", "other"],
-        help="Purpose of loan affects repayment patterns"
-    )
-    
-    st.subheader("📱 Digital Financial Engagement")
-    
-    digital_engagement_score = st.slider(
-        "Digital Engagement Score",
-        0.0, 1.0, 0.5, 0.1,
-        help="Higher scores indicate more digital financial activity"
-    )
-    
-    digital_pay_acc = st.slider(
-        "Digital Payment Account Score",
-        0.0, 1.0, 0.5, 0.1,
-        help="Usage level of digital payment accounts"
-    )
-    
-    prefer_digital = st.radio(
-        "Prefers Digital Accounts?",
-        ["No", "Yes"],
-        help="Preference for digital vs traditional banking"
-    )
-    
-    st.subheader("💳 Traditional Financial Services")
-    
-    has_credit_card = st.radio(
-        "Has Credit Card?",
-        ["No", "Yes"],
-        help="Credit card ownership indicates financial sophistication"
-    )
-    
-    st.subheader("💰 Financial Behavior")
-    
-    borrowed_any = st.radio(
-        "Has Borrowed Money (Any Source)?",
-        ["No", "Yes"],
-        help="Any borrowing activity in past 12 months"
-    )
-    
-    saved_any = st.radio(
-        "Has Saved Money?",
-        ["No", "Yes"],
-        help="Any saving activity indicates financial discipline"
-    )
-    
-    emergency_funds = st.radio(
-        "Has Emergency Funds?",
-        ["No", "Yes"],
-        help="Financial resilience indicator"
-    )
-    
-    fin_resilience = st.slider(
-        "Financial Resilience Score",
-        0.0, 1.0, 0.5, 0.1,
-        help="Overall financial stability and resilience"
-    )
-    
-    govt_services_score = st.slider(
-        "Government Services Digital Score",
-        0.0, 1.0, 0.3, 0.1,
-        help="Usage of government digital services"
-    )
+    predict_button = st.form_submit_button("🔮 Predict Account Ownership", use_container_width=True)
 
 # Main content area
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    # Prediction section
-    st.header("🎯 Risk Prediction Results")
+    # Regional Analysis
+    st.subheader(f"📊 Regional Analysis: {selected_region}")
     
-    if st.button("🔮 Predict Financial Inclusion Risk", type="primary", use_container_width=True):
-        # Prepare input data with actual feature names
-        input_data = pd.DataFrame([{
-            'region': region,
-            'income_group': income_group,
-            'demo_group': demo_group,
-            'demo_subgroup': demo_subgroup,
-            'biz_loan_source': biz_loan_source,
-            'biz_loan': 1 if has_biz_loan == "Yes" else 0,
-            'loan_purpose_group': loan_purpose_group,
-            'borrowed_any': 1 if borrowed_any == "Yes" else 0,
-            'saved_any': 1 if saved_any == "Yes" else 0,
-            'emergency_funds': 1 if emergency_funds == "Yes" else 0,
-            'fin_resilience': fin_resilience,
-            'digital_engagement_score': digital_engagement_score,
-            'digital_pay_acc': digital_pay_acc,
-            'prefer_digital_acc': 1 if prefer_digital == "Yes" else 0,
-            'credit_card': 1 if has_credit_card == "Yes" else 0,
-            'mobile_payment': 1 if mobile_payment == "Yes" else 0,
-            'mobile_payment_bill': 1 if mobile_payment_bill == "Yes" else 0,
-            'govt_digital_pay': 1 if govt_digital_pay == "Yes" else 0,
-            'govt_services_score': govt_services_score
-        }])
-        
-        # Enhanced risk calculation based on regional and demographic factors
-        base_risk = 0.6
-        
-        # Regional adjustments
-        regional_risk = {
-            "Sub-Saharan Africa": -0.1,  # Lower risk due to mobile money success
-            "South Asia": 0.1,           # Higher risk due to gender gaps
-            "Middle East & North Africa": 0.15,  # Highest risk region
-            "Latin America & Caribbean": -0.05,
-            "East Asia & Pacific": -0.15,  # Lower risk due to digital adoption
-            "Europe & Central Asia": -0.2,
-            "North America": -0.25
-        }
-        
-        # Income group adjustments
-        income_risk = {
-            "Low income": 0.2,
-            "Lower middle income": 0.1,
-            "Upper middle income": -0.1,
-            "High income": -0.2
-        }
-        
-        # Demographic adjustments
-        demo_risk = {
-            "women": 0.08,
-            "ages 15-24": 0.05,
-            "poorest 40%": 0.12,
-            "out of laborforce": 0.1,
-            "prim edu or less": 0.15,
-            "rural": -0.02  # Surprisingly lower due to mobile money
-        }
-        
-        risk_prob = base_risk
-        risk_prob += regional_risk.get(region, 0)
-        risk_prob += income_risk.get(income_group, 0)
-        risk_prob += demo_risk.get(demo_group, 0)
-        risk_prob += demo_risk.get(demo_subgroup, 0)
-        
-        # Digital factors (strong predictors)
-        risk_prob -= digital_engagement_score * 0.3
-        risk_prob -= digital_pay_acc * 0.2
-        if prefer_digital == "Yes":
-            risk_prob -= 0.1
-        if mobile_payment == "Yes":
-            risk_prob -= 0.08
-        if govt_digital_pay == "Yes":
-            risk_prob -= 0.06
-        
-        # Financial behavior factors
-        if has_credit_card == "Yes":
-            risk_prob -= 0.15
-        if borrowed_any == "Yes":
-            risk_prob += 0.05  # Borrowing can indicate need
-        if saved_any == "Yes":
-            risk_prob -= 0.1
-        if emergency_funds == "Yes":
-            risk_prob -= 0.12
-        risk_prob -= fin_resilience * 0.15
-        
-        # Business factors
-        if has_biz_loan == "Yes":
-            if biz_loan_source in ["bank or credit union", "microfinance institution"]:
-                risk_prob -= 0.1
-            else:
-                risk_prob += 0.05
-        
-        # Ensure probability bounds
-        risk_prob = max(0.02, min(0.98, risk_prob))
-        
-        # Determine risk category and recommendations
-        if risk_prob > 0.6:
-            risk_category = "HIGH RISK"
-            risk_class = "risk-high"
-            priority = "🚨 PRIORITY 1"
-            intervention = "Immediate Outreach Required"
-            strategy = [
-                "🎯 **Simplified Products**: Offer basic savings accounts with minimal requirements",
-                "📱 **Mobile-First Approach**: Use SMS and voice-based services instead of apps",
-                "🤝 **Community Outreach**: Deploy field agents for face-to-face enrollment",
-                "💰 **Micro-incentives**: Small cash bonuses for account opening and usage",
-                "🏫 **Financial Literacy**: Basic education programs before product introduction"
-            ]
-        elif risk_prob > 0.35:
-            risk_category = "MEDIUM RISK"
-            risk_class = "risk-medium"
-            priority = "⚠️ PRIORITY 2"
-            intervention = "Digital Engagement Programs"
-            strategy = [
-                "📚 **Digital Training**: Workshops on mobile payments and digital banking",
-                "🎮 **Gamification**: Reward-based engagement programs",
-                "👥 **Peer Networks**: Connect with digitally engaged community members",
-                "📊 **Progressive Products**: Start with simple, gradually introduce complex services",
-                "🎁 **Incentive Programs**: Cashback for digital transactions"
-            ]
-        else:
-            risk_category = "LOW RISK"
-            risk_class = "risk-low"
-            priority = "✅ PRIORITY 3"
-            intervention = "Premium Service Candidate"
-            strategy = [
-                "💎 **Premium Products**: Offer credit cards, investment products, insurance",
-                "🏦 **Relationship Banking**: Assign dedicated relationship managers",
-                "📈 **Advanced Services**: Loans, mortgages, business banking",
-                "🌟 **VIP Programs**: Exclusive benefits and priority customer service",
-                "📊 **Cross-selling**: Multiple product offerings based on usage patterns"
-            ]
-        
-        # Display results
-        st.markdown(f"""
-        <div class="{risk_class}">
-            <h2>{priority}: {risk_category}</h2>
-            <h3>Financial Exclusion Probability: {risk_prob:.1%}</h3>
-            <p><strong>Recommended Intervention:</strong> {intervention}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Strategic recommendations
-        st.subheader("📋 Targeted Strategy Recommendations")
-        for strategy_item in strategy:
-            st.markdown(strategy_item)
-        
-        # Feature importance for this prediction
-        st.subheader("🔍 Key Risk Factors Analysis")
-        
-        # Create feature importance chart - fix for plotly
-        features = list(model.feature_importances_.keys())[:8]
-        importances = list(model.feature_importances_.values())[:8]
-        
-        fig = px.bar(
-            x=importances, 
-            y=features,
-            orientation='h',
-            title="Most Important Features in Your Risk Assessment",
-            labels={'x': 'Feature Importance', 'y': 'Features'},
-            color=importances,
-            color_continuous_scale="RdYlBu_r"
+    # Filter data for selected region and country
+    region_data = df[df['region'] == selected_region]
+    country_data = df[df['country'] == selected_country]
+    
+    # Regional metrics
+    region_inclusion_rate = region_data['has_account'].mean()
+    country_inclusion_rate = country_data['has_account'].mean()
+    global_inclusion_rate = df['has_account'].mean()
+    
+    # Display metrics
+    met_col1, met_col2, met_col3 = st.columns(3)
+    
+    with met_col1:
+        st.metric(
+            "Global Rate", 
+            f"{global_inclusion_rate:.1%}",
+            delta=None
         )
-        fig.update_layout(height=400, showlegend=False)
-        fig.update_traces(texttemplate='%{x:.3f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Regional context analysis
-        st.subheader(f"🌍 Regional Context: {region}")
-        
-        regional_insights = {
-            "Sub-Saharan Africa": {
-                "strength": "Leading mobile money adoption (68.2% rural inclusion)",
-                "challenge": "Infrastructure gaps in remote areas",
-                "strategy": "Leverage mobile money networks for full financial services"
-            },
-            "South Asia": {
-                "strength": "Large unbanked population with high mobile penetration", 
-                "challenge": "Significant gender gap (47.6% lower women's inclusion)",
-                "strategy": "Women-focused mobile financial services with family engagement"
-            },
-            "Middle East & North Africa": {
-                "strength": "Growing fintech sector and young population",
-                "challenge": "Largest financial inclusion gap globally",
-                "strategy": "Digital-first approach with cultural sensitivity"
-            },
-            "East Asia & Pacific": {
-                "strength": "High digital adoption and government support",
-                "challenge": "Rural-urban divide in some countries",
-                "strategy": "Government-private partnerships for universal coverage"
-            },
-            "Latin America & Caribbean": {
-                "strength": "Strong remittance networks and mobile penetration",
-                "challenge": "Informal economy dominance",
-                "strategy": "Formalization incentives through digital payments"
-            },
-            "Europe & Central Asia": {
-                "strength": "Strong regulatory frameworks and infrastructure",
-                "challenge": "Rural and elderly populations",
-                "strategy": "Traditional banking integration with digital services"
-            },
-            "North America": {
-                "strength": "Advanced financial infrastructure",
-                "challenge": "Underbanked populations in specific communities",
-                "strategy": "Community banking and fintech partnerships"
-            }
-        }
-        
-        if region in regional_insights:
-            insight = regional_insights[region]
-            col_a, col_b = st.columns(2)
-            
-            with col_a:
-                st.success(f"**Regional Strength:** {insight['strength']}")
-                st.info(f"**Strategy:** {insight['strategy']}")
-            
-            with col_b:
-                st.warning(f"**Challenge:** {insight['challenge']}")
-                
-                # Income group specific insights
-                income_context = {
-                    "Low income": "Focus on basic accounts and mobile money",
-                    "Lower middle income": "Expand to credit and insurance products", 
-                    "Upper middle income": "Full-service digital banking",
-                    "High income": "Premium and investment products"
-                }
-                st.info(f"**Income Focus:** {income_context.get(income_group, 'Tailored approach needed')}")
+    
+    with met_col2:
+        delta_region = region_inclusion_rate - global_inclusion_rate
+        st.metric(
+            f"{selected_region}", 
+            f"{region_inclusion_rate:.1%}",
+            delta=f"{delta_region:+.1%}"
+        )
+    
+    with met_col3:
+        delta_country = country_inclusion_rate - region_inclusion_rate
+        st.metric(
+            f"{selected_country}", 
+            f"{country_inclusion_rate:.1%}",
+            delta=f"{delta_country:+.1%}"
+        )
+    
+    # Regional comparison chart
+    regional_stats = df.groupby('region')['has_account'].agg(['mean', 'count']).reset_index()
+    regional_stats.columns = ['Region', 'Inclusion_Rate', 'Sample_Size']
+    
+    fig_regional = px.bar(
+        regional_stats, 
+        x='Region', 
+        y='Inclusion_Rate',
+        title='Financial Inclusion Rates by Region',
+        color='Inclusion_Rate',
+        color_continuous_scale='RdYlGn',
+        text=regional_stats['Inclusion_Rate'].apply(lambda x: f'{x:.1%}')
+    )
+    fig_regional.update_layout(
+        xaxis_tickangle=-45,
+        height=400,
+        showlegend=False
+    )
+    fig_regional.update_traces(textposition='outside')
+    st.plotly_chart(fig_regional, use_container_width=True)
 
 with col2:
-    # Impact metrics and information
-    st.header("📊 Global Impact")
+    st.subheader("🎯 Model Performance")
     
-    st.markdown("""
-    <div class="impact-metric">
-        <h3>1.4B</h3>
-        <p>Adults without bank accounts worldwide</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Model metrics (from your results)
+    metrics_data = {
+        'Metric': ['Accuracy', 'AUC-ROC', 'AUC-PR', 'F1-Score', 'Precision', 'Recall'],
+        'Score': [0.8962, 0.9607, 0.9743, 0.9163, 0.9103, 0.9225],
+        'Category': ['Good', 'Excellent', 'Excellent', 'Excellent', 'Excellent', 'Excellent']
+    }
     
-    st.markdown("""
-    <div class="impact-metric">
-        <h3>98.33%</h3>
-        <p>Model accuracy (AUC score)</p>
-    </div>
-    """, unsafe_allow_html=True)
+    metrics_df = pd.DataFrame(metrics_data)
     
-    st.markdown("""
-    <div class="impact-metric">
-        <h3>47.6%</h3>
-        <p>Gender gap in financial inclusion</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Color coding
+    colors = {'Excellent': '#28a745', 'Good': '#ffc107', 'Poor': '#dc3545'}
     
-    st.markdown("""
-    <div class="impact-metric">
-        <h3>$50B+</h3>
-        <p>Potential economic impact</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Target segments
-    st.subheader("🎯 Priority Segments")
-    
-    target_segments = [
-        {"segment": "Women in MENA & South Asia", "population": "300M+", "gap": "47.6%"},
-        {"segment": "Youth (15-24) with Primary Education", "population": "200M+", "gap": "46.5%"},
-        {"segment": "Rural Small Business Owners", "population": "150M+", "gap": "31.8%"},
-        {"segment": "Out-of-Labor Force Adults", "population": "250M+", "gap": "46.8%"}
-    ]
-    
-    for segment in target_segments:
-        st.markdown(f"""
-        <div class="deployment-card">
-            <strong>{segment['segment']}</strong><br>
-            Population: {segment['population']}<br>
-            Inclusion Gap: {segment['gap']}
-        </div>
-        """, unsafe_allow_html=True)
+    fig_metrics = px.bar(
+        metrics_df, 
+        y='Metric', 
+        x='Score',
+        orientation='h',
+        color='Category',
+        color_discrete_map=colors,
+        text=metrics_df['Score'].apply(lambda x: f'{x:.3f}')
+    )
+    fig_metrics.update_layout(
+        title="Model Performance Metrics",
+        height=400,
+        showlegend=False
+    )
+    fig_metrics.update_traces(textposition='auto')
+    st.plotly_chart(fig_metrics, use_container_width=True)
 
-# Bottom section - Deployment impact
-st.header("🚀 Deployment Impact Projection")
+# Feature Importance Section
+st.subheader("🔍 Feature Importance Analysis")
 
-col3, col4, col5 = st.columns(3)
+col1, col2 = st.columns([3, 2])
+
+with col1:
+    # Top 10 features chart
+    top_features = feature_importance.head(10)
+    
+    fig_importance = px.bar(
+        top_features, 
+        y='feature', 
+        x='importance',
+        orientation='h',
+        title='Top 10 Most Important Features',
+        color='importance',
+        color_continuous_scale='viridis'
+    )
+    fig_importance.update_layout(
+        yaxis=dict(categoryorder='total ascending'),
+        height=400
+    )
+    st.plotly_chart(fig_importance, use_container_width=True)
+
+with col2:
+    st.markdown("**Feature Categories:**")
+    
+    # Group features by category
+    business_features = ['biz_loan_source', 'biz_loan', 'loan_purpose_group', 'loan_purpose']
+    digital_features = ['digital_pay', 'digital_pay_acc', 'mobile_pay_s_r', 'prefer_digital_fin', 
+                       'digital_payment_other', 'mobile_payment_bill']
+    saving_features = ['emergency_funds', 'saved_any', 'saved_for_purchase']
+    
+    business_importance = feature_importance[feature_importance['feature'].isin(business_features)]['importance'].sum()
+    digital_importance = feature_importance[feature_importance['feature'].isin(digital_features)]['importance'].sum()
+    saving_importance = feature_importance[feature_importance['feature'].isin(saving_features)]['importance'].sum()
+    
+    category_data = {
+        'Category': ['Business & Credit', 'Digital Services', 'Savings Behavior', 'Other'],
+        'Importance': [business_importance, digital_importance, saving_importance, 
+                      1 - business_importance - digital_importance - saving_importance]
+    }
+    
+    fig_pie = px.pie(
+        values=category_data['Importance'], 
+        names=category_data['Category'],
+        title='Feature Importance by Category'
+    )
+    st.plotly_chart(fig_pie, use_container_width=True)
+
+# Individual Prediction Results
+if predict_button:
+    st.subheader("🔮 Individual Prediction Results")
+    
+    # Prepare input data
+    input_data = pd.DataFrame({
+        'biz_loan_source': [biz_loan_source],
+        'biz_loan': [biz_loan],
+        'emergency_funds': [emergency_funds],
+        'digital_pay': [digital_pay],
+        'digital_pay_acc': [digital_pay_acc],
+        'loan_purpose_group': [loan_purpose_group],
+        'mobile_pay_s_r': [mobile_pay_s_r],
+        'prefer_digital_fin': [prefer_digital_fin],
+        'digital_payment_other': [digital_payment_other],
+        'govt_payment_recv': [govt_payment_recv],
+        'saved_any': [saved_any],
+        'mobile_payment_bill': [mobile_payment_bill],
+        'borrowed_any': [borrowed_any],
+        'saved_for_purchase': [saved_for_purchase],
+        'loan_purpose': [loan_purpose],
+        'age': [age],
+        'income_level': [income_level],
+        'education_level': [education_level]
+    })
+    
+    # Make prediction
+    input_imputed = imputer.transform(input_data)
+    probability = model.predict_proba(input_imputed)[0][1]
+    prediction = model.predict(input_imputed)[0]
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        # Probability gauge
+        fig_gauge = go.Figure(go.Indicator(
+            mode = "gauge+number+delta",
+            value = probability * 100,
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            title = {'text': "Account Ownership Probability"},
+            delta = {'reference': 62},  # Global average
+            gauge = {
+                'axis': {'range': [None, 100]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [0, 50], 'color': "lightgray"},
+                    {'range': [50, 80], 'color': "yellow"},
+                    {'range': [80, 100], 'color': "green"}
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 90
+                }
+            }
+        ))
+        fig_gauge.update_layout(height=300)
+        st.plotly_chart(fig_gauge, use_container_width=True)
+    
+    # Interpretation
+    if probability >= 0.8:
+        st.success(f"🎯 **High Probability ({probability:.1%})**: Strong likelihood of having a bank account")
+        recommendation = "**Retention Focus**: Ensure continued satisfaction with banking services"
+    elif probability >= 0.5:
+        st.warning(f"⚠️ **Moderate Probability ({probability:.1%})**: Uncertain account ownership status")
+        recommendation = "**Targeted Outreach**: Focus on digital services and emergency fund products"
+    else:
+        st.error(f"🚨 **Low Probability ({probability:.1%})**: Likely unbanked individual")
+        recommendation = "**Priority Intervention**: Immediate outreach with business loan and mobile payment focus"
+    
+    st.markdown(f"**🎯 Recommendation**: {recommendation}")
+    
+    # Top contributing factors for this prediction
+    feature_contributions = []
+    for i, feature in enumerate(feature_cols):
+        contribution = input_imputed[0][i] * feature_importance[feature_importance['feature'] == feature]['importance'].iloc[0]
+        feature_contributions.append({'feature': feature, 'contribution': contribution})
+    
+    contrib_df = pd.DataFrame(feature_contributions).sort_values('contribution', ascending=False).head(5)
+    
+    st.markdown("**🔍 Top Contributing Factors:**")
+    for _, row in contrib_df.iterrows():
+        st.markdown(f"• **{row['feature']}**: {row['contribution']:.3f}")
+
+# Country Deep Dive
+st.subheader(f"🌍 Country Deep Dive: {selected_country}")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    # Country-specific metrics
+    country_stats = country_data.groupby('has_account').agg({
+        'age': 'mean',
+        'income_level': 'mean',
+        'education_level': 'mean'
+    }).round(2)
+    
+    st.markdown("**Demographic Breakdown by Account Status:**")
+    st.dataframe(country_stats)
+
+with col2:
+    # Feature distribution for country
+    if len(country_data) > 0:
+        fig_dist = px.box(
+            country_data, 
+            x='has_account', 
+            y='age',
+            title=f'Age Distribution by Account Status - {selected_country}',
+            labels={'has_account': 'Has Account', 'age': 'Age'}
+        )
+        st.plotly_chart(fig_dist, use_container_width=True)
+
+# Policy Recommendations
+st.subheader("📋 Policy Recommendations")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    <div class="metric-card success-metric">
+    <h4>🏢 Business-First Strategy</h4>
+    <p>Focus on business loan access and entrepreneurial financial services as primary inclusion drivers (29.13% model importance)</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="metric-card warning-metric">
+    <h4>📱 Digital Infrastructure</h4>
+    <p>Invest in mobile payment systems and digital literacy programs (12.33% model importance)</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.subheader("📈 6-Month Targets")
     st.markdown("""
-    - **New Accounts**: 5M+
-    - **Partner Integration**: 15 organizations
-    - **Geographic Reach**: 25 countries
-    - **Cost Reduction**: 40% in outreach
-    """)
-
-with col4:
-    st.subheader("📊 18-Month Goals")
-    st.markdown("""
-    - **New Accounts**: 25M+
-    - **Policy Partnerships**: 50 governments
-    - **Mobile Integration**: 100M+ users
-    - **Economic Impact**: $10B+ activity
-    """)
-
-with col5:
-    st.subheader("🌍 Long-term Vision")
-    st.markdown("""
-    - **New Accounts**: 100M+
-    - **Global Coverage**: 100+ countries
-    - **Inclusion Gap Closure**: 30%
-    - **Systemic Change**: Policy integration
-    """)
+    <div class="metric-card danger-metric">
+    <h4>🛡️ Emergency Preparedness</h4>
+    <p>Link disaster preparedness with financial inclusion through emergency fund products (9.80% importance)</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; padding: 2rem;">
-    <p><strong>Financial Inclusion Risk Predictor</strong> | Powered by Random Forest ML Model (98.33% AUC)</p>
-    <p>Transforming 1.4 billion lives through data-driven financial inclusion</p>
+<div style='text-align: center; color: #666;'>
+<p>📊 Data: Global Findex Database (World Bank, 2024) | 🤖 Model: Random Forest (96.07% AUC) | 
+🎯 Confidence: High-accuracy predictions for targeted interventions</p>
 </div>
 """, unsafe_allow_html=True)
-
-# How to use instructions
-with st.expander("📖 How to Use This Tool"):
-    st.markdown("""
-    ### For Policy Makers & Program Managers:
-    1. **Individual Assessment**: Use the sidebar to input beneficiary profiles
-    2. **Risk Prediction**: Get instant risk scores and intervention recommendations
-    3. **Resource Allocation**: Prioritize outreach based on risk categories
-    4. **Strategy Planning**: Use targeted recommendations for program design
-    
-    ### For Field Teams:
-    1. **Pre-Screening**: Assess prospects before expensive outreach
-    2. **Product Matching**: Recommend appropriate financial products
-    3. **Success Tracking**: Monitor intervention effectiveness
-    4. **Training Tool**: Understand key risk factors for better field decisions
-    
-    ### For Financial Institutions:
-    1. **Credit Risk**: Assess loan default probability
-    2. **Product Development**: Design products for specific risk segments
-    3. **Marketing Optimization**: Target marketing spend effectively
-    4. **Portfolio Management**: Monitor and manage existing customer risk
-    """)
-
-# Deployment instructions
-with st.expander("🚀 Deployment Instructions"):
-    st.markdown("""
-    ### Local Deployment:
-    ```bash
-    pip install streamlit pandas plotly scikit-learn
-    streamlit run financial_inclusion_app.py
-    ```
-    
-    ### Cloud Deployment Options:
-    
-    **1. Streamlit Cloud (Recommended)**
-    - Fork this code to GitHub
-    - Connect to Streamlit Cloud
-    - Deploy with one click
-    - Free for public repos
-    
-    **2. Heroku**
-    ```bash
-    heroku create financial-inclusion-app
-    git push heroku main
-    ```
-    
-    **3. Google Cloud Run**
-    ```bash
-    gcloud run deploy --source .
-    ```
-    
-    ### Required Files:
-    - `financial_inclusion_app.py` (this file)
-    - `requirements.txt` (streamlit, pandas, plotly, scikit-learn)
-    - `financial_inclusion_model.pkl` (your trained model)
-    """)
