@@ -422,12 +422,10 @@ if st.session_state.page == 'home':
     
     
     # Enhanced Visualizations
-    col1 = st.columns(1)
-
-    with col1:
-        st.markdown("### 🎯 Income Group Analysis")
+    
+    st.markdown("### 🎯 Income Group Analysis")
         
-        fig_income = px.bar(
+    fig_income = px.bar(
             income_df,
             x='income_group',
             y='inclusion_rate',
@@ -437,13 +435,13 @@ if st.session_state.page == 'home':
             title="Inclusion Rate by Income Level"
         )
         
-        fig_income.update_traces(
+    fig_income.update_traces(
             texttemplate='%{text:.1%}',
             textposition='outside',
             textfont=dict(size=14, color='black', family='Arial Black')
         )
         
-        fig_income.update_layout(
+    fig_income.update_layout(
             height=400,
             showlegend=False,
             xaxis_title="Income Group",
@@ -455,7 +453,7 @@ if st.session_state.page == 'home':
             title_font=dict(size=18)
         )
         
-        st.plotly_chart(fig_income, use_container_width=True)
+    st.plotly_chart(fig_income, use_container_width=True)
 
 
 # Regional Analytics Page
