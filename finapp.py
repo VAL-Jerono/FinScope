@@ -587,7 +587,7 @@ elif st.session_state.page == 'regional':
 
 
 # Individual Analysis Mode
-elif st.session_state.analysis_mode == 'individual':
+elif st.session_state.page == 'individual':
     st.markdown("## 👤 Individual Financial Inclusion Predictor")
     st.markdown("*Get personalized insights and recommendations based on your profile*")
     
