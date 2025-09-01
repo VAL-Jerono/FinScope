@@ -429,7 +429,8 @@ if st.session_state.page == 'home':
         
         # Enhanced bar chart
         fig_regions = px.bar(
-            regions_sorted,
+            regional_df.sort_values('inclusion_rate', ascending=True),
+,
             x='inclusion_rate',
             y='region',
             orientation='h',
