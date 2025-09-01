@@ -499,12 +499,15 @@ elif st.session_state.page == 'regional':
                       'Sample Size: %{customdata[1]:,}<br>' +
                       '<extra></extra>',
         customdata=country_df[['region', 'sample_size']].values,
-        colorbar=dict(
-            title="Financial<br>Inclusion Rate",
-            titlefont=dict(size=14),
-            tickformat='.0%',
-            len=0.8
+       colorbar=dict(
+        title=dict(
+        text="Financial<br>Inclusion Rate",
+        font=dict(size=14)
         ),
+        tickformat='.0%',
+        len=0.8
+    ),
+
         showscale=True
     ))
 
