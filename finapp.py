@@ -455,7 +455,6 @@ if st.session_state.page == 'home':
         
     st.plotly_chart(fig_income, use_container_width=True)
 
-
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
     st.markdown("## 🗺️ Interactive Regional Analytics")
