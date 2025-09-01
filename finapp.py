@@ -419,6 +419,75 @@ if st.session_state.page == 'home':
     )
     
     st.plotly_chart(fig_overview, use_container_width=True)
+    
+    
+    # Enhanced Visualizations
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### 📊 Regional Inclusion Rates Comparison")
+        
+        # Enhanced bar chart
+        fig_regions = px.bar(
+            regions_sorted,
+            x='inclusion_rate',
+            y='region',
+            orientation='h',
+            color='inclusion_rate',
+            color_continuous_scale=['#C0392B', '#E74C3C', '#F7931E', '#FFD23F', '#FF6B35', '#2E8B57'],
+            text='inclusion_rate',
+            title="Financial Inclusion by Region"
+        )
+        
+        fig_regions.update_traces(
+            texttemplate='%{text:.1%}', 
+            textposition='outside',
+            textfont=dict(size=12, color='black', family='Arial Black')
+        )
+        
+        fig_regions.update_layout(
+            height=400,
+            showlegend=False,
+            xaxis_title="Financial Inclusion Rate",
+            yaxis_title="",
+            xaxis=dict(tickformat='.0%'),
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        
+        st.plotly_chart(fig_regions, use_container_width=True)
+
+    with col2:
+        st.markdown("### 🎯 Income Group Analysis")
+        
+        fig_income = px.bar(
+            income_df,
+            x='income_group',
+            y='inclusion_rate',
+            color='inclusion_rate',
+            color_continuous_scale='Viridis',
+            text='inclusion_rate',
+            title="Inclusion Rate by Income Level"
+        )
+        
+        fig_income.update_traces(
+            texttemplate='%{text:.1%}',
+            textposition='outside',
+            textfont=dict(size=12, color='black', family='Arial Black')
+        )
+        
+        fig_income.update_layout(
+            height=400,
+            showlegend=False,
+            xaxis_title="Income Group",
+            yaxis_title="Inclusion Rate",
+            yaxis=dict(tickformat='.0%'),
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        
+        st.plotly_chart(fig_income, use_container_width=True)
+
 
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
