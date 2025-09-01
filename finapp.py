@@ -583,4 +583,22 @@ for _, region_data in low_performing.iterrows():
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <p style="margin: 5px 0;"><strong>Current Rate:</strong> {inclusion_rate:.1%}</p>
-                <p style="margin: 5px 0;"><strong>Gap to Global Avg:</strong
+                <p style="margin: 5px 0;"><strong>Gap to Global Avg:</strong> {(0.61 - inclusion_rate):.1%}</p>
+                <p style="margin: 5px 0;"><strong>Sample Size:</strong> {sample_size:,} adults</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 5px 0;"><strong>Potential Impact:</strong             > {potential_impact:,.0f} adults</p>
+            </div>
+        </div>
+        <div style="margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+            <strong>Recommended Actions:</strong>
+            <ul style="margin: 5px 0 0 15px; color: #636e72; line-height: 1.6;">
+                <li>Expand mobile banking and digital payment systems</li>      
+
+                <li>Enhance financial literacy and inclusion programs</li>             
+                <li>Strengthen regulatory frameworks for fintech innovation</li>
+                <li>Promote SME financing and support services</li>
+            </ul>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
