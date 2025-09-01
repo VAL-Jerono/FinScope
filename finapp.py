@@ -743,11 +743,14 @@ elif st.session_state.analysis_mode == 'individual':
         if emergency_funds < 0.5:
             recommendations.append("🆘 **Emergency Preparedness**: Build an emergency fund - start with small, regular savings")
             
-        if digital_pay < 0.5:
+        if digital_engagement < 0.5:
             recommendations.append("📱 **Digital Adoption**: Learn about mobile banking and digital payment platforms available in your area")
             
-        if savings < 0.5:
-            recommendations.append("💰 **Savings Habits**: Set up automatic savings plans and explore high-yield savings accounts")
+        if financial_activity < 0.5:
+            recommendations.append("💰 **Financial Activity**: Increase your participation in savings, lending, and investment activities")
+            
+        if govt_services < 0.5:
+            recommendations.append("🏛️ **Government Services**: Explore digital government payment and service options")
             
         if final_score < region_baseline[region]:
             recommendations.append(f"🎯 **Regional Programs**: Look into financial inclusion initiatives specific to {region}")
@@ -756,8 +759,9 @@ elif st.session_state.analysis_mode == 'individual':
         low_factors = [(k, v) for k, v in {
             'Business Loans': biz_loan,
             'Emergency Funds': emergency_funds, 
-            'Digital Payments': digital_pay,
-            'Savings': savings
+            'Digital Engagement': digital_engagement,
+            'Financial Activity': financial_activity,
+            'Government Services': govt_services
         }.items() if v < 0.4]
         
         if low_factors:
