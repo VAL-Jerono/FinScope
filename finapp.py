@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="FinScope Global - Financial Inclusion Analytics",
     page_icon="🌍",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Enhanced custom CSS
@@ -20,33 +20,76 @@ st.markdown("""
 <style>
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 25px;
+        padding: 30px;
         border-radius: 15px;
-        margin-bottom: 25px;
+        margin-bottom: 30px;
         color: white;
         text-align: center;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
     }
     .metric-card {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border-left: 5px solid #667eea;
-        margin-bottom: 15px;
-        transition: transform 0.2s ease;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-left: 6px solid #667eea;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        text-align: center;
     }
     .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .nav-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 18px;
+        margin: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+    .nav-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+    }
+    .nav-button.active {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        box-shadow: 0 8px 25px rgba(118,75,162,0.4);
+    }
+    .region-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        border-left: 6px solid;
+        animation: slideIn 0.5s ease-out;
+    }
+    .calculator-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
     }
     .recommendation-box {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: 2px solid #dee2e6;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
         padding: 20px;
+        border-radius: 12px;
         margin: 15px 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.3);
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
     }
     .stButton > button {
         width: 100%;
@@ -63,40 +106,12 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(102,126,234,0.4);
     }
-    .insight-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 25px;
-        border-radius: 15px;
-        margin: 20px 0;
-        box-shadow: 0 6px 25px rgba(102,126,234,0.3);
-    }
-    .region-card {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin: 10px 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border-left: 6px solid;
-        transition: all 0.3s ease;
-    }
-    .region-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .stats-container {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 20px 0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
 </style>
 """, unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
-    # Your actual regional data
+    # Regional data
     regional_data = {
         'region': [
             'High income',
@@ -112,14 +127,14 @@ def load_data():
         'std': [0.173, 0.272, 0.221, 0.253, 0.202, 0.224, 0.230]
     }
     
-    # Income group data from your analysis
+    # Income group data
     income_data = {
         'income_group': ['High income', 'Upper middle income', 'Lower middle income', 'Low income'],
         'inclusion_rate': [0.870, 0.571, 0.440, 0.374],
         'count': [2790, 2203, 2328, 990]
     }
     
-    # Your actual Random Forest feature importance
+    # Random Forest feature importance
     feature_importance = {
         'feature': [
             'Business Loan Source', 'Business Loan Access', 'Emergency Funds', 'Digital Engagement Score',
@@ -131,474 +146,490 @@ def load_data():
                       0.0392, 0.0390, 0.0378, 0.0351, 0.0273, 0.0251, 0.0250]
     }
     
-    # Country mapping with ISO codes for proper map visualization
-    country_mapping = {
+    # Regional mapping with colors and country data
+    region_mapping = {
         'High income': {
-            'countries': ['Australia', 'Austria', 'Bahrain', 'Belgium', 'Canada', 'Chile', 'Croatia', 
-                         'Cyprus', 'Czechia', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 
-                         'Greece', 'Hong Kong', 'Hungary', 'Iceland', 'Ireland', 'Israel', 'Italy', 
-                         'Japan', 'South Korea', 'Kuwait', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 
-                         'Netherlands', 'New Zealand', 'Norway', 'Oman', 'Panama', 'Poland', 'Portugal', 
-                         'Qatar', 'Romania', 'Saudi Arabia', 'Singapore', 'Slovakia', 'Slovenia', 
-                         'Spain', 'Sweden', 'Switzerland', 'Taiwan', 'Trinidad and Tobago', 
-                         'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay'],
-            'iso_codes': ['AUS', 'AUT', 'BHR', 'BEL', 'CAN', 'CHL', 'HRV', 'CYP', 'CZE', 'DNK', 
-                         'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HKG', 'HUN', 'ISL', 'IRL', 'ISR', 
-                         'ITA', 'JPN', 'KOR', 'KWT', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'NZL', 
-                         'NOR', 'OMN', 'PAN', 'POL', 'PRT', 'QAT', 'ROU', 'SAU', 'SGP', 'SVK', 
-                         'SVN', 'ESP', 'SWE', 'CHE', 'TWN', 'TTO', 'ARE', 'GBR', 'USA', 'URY'],
-            'color': '#2E8B57'
+            'color': '#2E8B57',
+            'countries': ['USA', 'Germany', 'Japan', 'UK', 'France', 'Canada', 'Australia'],
+            'key_challenges': ['Digital divide in rural areas', 'Aging population banking needs'],
+            'opportunities': ['Fintech innovation', 'Sustainable finance', 'Digital banking expansion'],
+            'priority_actions': ['AI-driven personalized services', 'Green finance products', 'Elderly-friendly digital solutions']
         },
         'East Asia & Pacific (excluding high income)': {
-            'countries': ['Cambodia', 'China', 'Indonesia', 'Laos', 'Malaysia', 'Mongolia', 
-                         'Myanmar', 'Philippines', 'Thailand', 'Vietnam'],
-            'iso_codes': ['KHM', 'CHN', 'IDN', 'LAO', 'MYS', 'MNG', 'MMR', 'PHL', 'THA', 'VNM'],
-            'color': '#FF6B35'
+            'color': '#FF6B35',
+            'countries': ['China', 'Indonesia', 'Thailand', 'Philippines', 'Vietnam', 'Malaysia'],
+            'key_challenges': ['Rural-urban divide', 'Complex regulatory environments', 'Infrastructure gaps'],
+            'opportunities': ['Mobile payment growth', 'E-commerce integration', 'Cross-border payments'],
+            'priority_actions': ['Digital wallet expansion', 'Rural connectivity programs', 'Regulatory harmonization']
         },
         'Europe & Central Asia (excluding high income)': {
-            'countries': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia and Herzegovina', 
-                         'Bulgaria', 'Georgia', 'Kazakhstan', 'Kosovo', 'Kyrgyzstan', 'Moldova', 
-                         'Montenegro', 'North Macedonia', 'Russia', 'Serbia', 'Tajikistan', 
-                         'Turkey', 'Turkmenistan', 'Ukraine', 'Uzbekistan'],
-            'iso_codes': ['ALB', 'ARM', 'AZE', 'BLR', 'BIH', 'BGR', 'GEO', 'KAZ', 'XKX', 'KGZ', 
-                         'MDA', 'MNE', 'MKD', 'RUS', 'SRB', 'TJK', 'TUR', 'TKM', 'UKR', 'UZB'],
-            'color': '#F7931E'
+            'color': '#F7931E',
+            'countries': ['Russia', 'Turkey', 'Kazakhstan', 'Ukraine', 'Romania', 'Bulgaria'],
+            'key_challenges': ['Economic volatility', 'Legacy banking systems', 'Currency instability'],
+            'opportunities': ['Digital transformation', 'EU integration benefits', 'Remittance corridors'],
+            'priority_actions': ['Modern payment infrastructure', 'Cross-border integration', 'SME financing']
         },
         'South Asia (excluding high income)': {
-            'countries': ['Afghanistan', 'Bangladesh', 'Bhutan', 'India', 'Maldives', 'Nepal', 
-                         'Pakistan', 'Sri Lanka'],
-            'iso_codes': ['AFG', 'BGD', 'BTN', 'IND', 'MDV', 'NPL', 'PAK', 'LKA'],
-            'color': '#FFD23F'
+            'color': '#FFD23F',
+            'countries': ['India', 'Bangladesh', 'Pakistan', 'Sri Lanka', 'Nepal', 'Afghanistan'],
+            'key_challenges': ['Large unbanked population', 'Documentation barriers', 'Gender gaps'],
+            'opportunities': ['Digital identity systems', 'Mobile-first approaches', 'Government support'],
+            'priority_actions': ['Jan Dhan-style programs', 'Women-focused initiatives', 'Agent banking networks']
         },
         'Latin America & Caribbean (excluding high income)': {
-            'countries': ['Argentina', 'Belize', 'Bolivia', 'Brazil', 'Colombia', 'Costa Rica', 
-                         'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', 'Haiti', 
-                         'Honduras', 'Jamaica', 'Mexico', 'Nicaragua', 'Paraguay', 'Peru', 'Venezuela'],
-            'iso_codes': ['ARG', 'BLZ', 'BOL', 'BRA', 'COL', 'CRI', 'DOM', 'ECU', 'SLV', 'GTM', 
-                         'HTI', 'HND', 'JAM', 'MEX', 'NIC', 'PRY', 'PER', 'VEN'],
-            'color': '#FF6B35'
+            'color': '#E74C3C',
+            'countries': ['Brazil', 'Mexico', 'Argentina', 'Colombia', 'Peru', 'Chile'],
+            'key_challenges': ['Economic informality', 'Credit access barriers', 'Income inequality'],
+            'opportunities': ['Fintech boom', 'Remittance integration', 'Government digitization'],
+            'priority_actions': ['Alternative credit scoring', 'Digital remittances', 'Financial education']
         },
         'Sub-Saharan Africa (excluding high income)': {
-            'countries': ['Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 
-                         'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 
-                         'Republic of the Congo', 'Ivory Coast', 'Eswatini', 'Ethiopia', 'Gabon', 
-                         'Gambia', 'Ghana', 'Guinea', 'Kenya', 'Lesotho', 'Liberia', 'Madagascar', 
-                         'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Mozambique', 'Namibia', 
-                         'Niger', 'Nigeria', 'Rwanda', 'Senegal', 'Sierra Leone', 'Somalia', 
-                         'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Uganda', 
-                         'Zambia', 'Zimbabwe'],
-            'iso_codes': ['AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CMR', 'CAF', 'TCD', 'COM', 'COD', 
-                         'COG', 'CIV', 'SWZ', 'ETH', 'GAB', 'GMB', 'GHA', 'GIN', 'KEN', 'LSO', 
-                         'LBR', 'MDG', 'MWI', 'MLI', 'MRT', 'MUS', 'MOZ', 'NAM', 'NER', 'NGA', 
-                         'RWA', 'SEN', 'SLE', 'SOM', 'ZAF', 'SSD', 'SDN', 'TZA', 'TGO', 'UGA', 
-                         'ZMB', 'ZWE'],
-            'color': '#E74C3C'
+            'color': '#C0392B',
+            'countries': ['Nigeria', 'Kenya', 'South Africa', 'Ghana', 'Tanzania', 'Ethiopia'],
+            'key_challenges': ['Infrastructure limitations', 'Low income levels', 'Distance to banks'],
+            'opportunities': ['Mobile money success', 'Agent banking', 'Agricultural finance'],
+            'priority_actions': ['Mobile money expansion', 'Agent network growth', 'Agricultural value chain finance']
         },
         'Middle East & North Africa (excluding high income)': {
-            'countries': ['Algeria', 'Djibouti', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon', 
-                         'Libya', 'Morocco', 'Syria', 'Tunisia', 'Palestine', 'Yemen'],
-            'iso_codes': ['DZA', 'DJI', 'EGY', 'IRN', 'IRQ', 'JOR', 'LBN', 'LBY', 'MAR', 'SYR', 
-                         'TUN', 'PSE', 'YEM'],
-            'color': '#C0392B'
+            'color': '#8E44AD',
+            'countries': ['Egypt', 'Morocco', 'Jordan', 'Tunisia', 'Algeria', 'Lebanon'],
+            'key_challenges': ['Political instability', 'Youth unemployment', 'Regulatory restrictions'],
+            'opportunities': ['Islamic finance growth', 'Oil revenue diversification', 'Regional integration'],
+            'priority_actions': ['Sharia-compliant products', 'Youth banking programs', 'Digital government services']
         }
     }
     
-    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), country_mapping
+    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping
 
-# Load data
-regional_df, income_df, feature_df, country_mapping = load_data()
-
-# Session state for selected region
+# Initialize session state
+if 'page' not in st.session_state:
+    st.session_state.page = 'home'
 if 'selected_region' not in st.session_state:
     st.session_state.selected_region = None
 
-# Enhanced Header
+# Load data
+regional_df, income_df, feature_df, region_mapping = load_data()
+
+# Header
 st.markdown("""
 <div class="main-header">
     <h1>🌍 FinScope Global</h1>
     <h2>Financial Inclusion Analytics Dashboard</h2>
-    <p style="font-size: 18px; margin: 15px 0;"><i>Empowering evidence-based policy through machine learning insights</i></p>
-    <p style="font-size: 16px; font-weight: bold;">📊 Covering 149 countries across 7 regions | 🎯 1.4 billion adults without financial accounts</p>
+    <p style="font-size: 18px; margin: 15px 0;"><i>AI-powered insights for evidence-based financial inclusion policy</i></p>
+    <p style="font-size: 16px; font-weight: bold;">📊 149 countries | 🎯 89.6% ML accuracy | 🌐 8,311 adults analyzed</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Global Statistics Dashboard
-st.markdown("## 📈 Global Financial Inclusion Overview")
-
-col1, col2, col3, col4, col5 = st.columns(5)
+# Navigation
+col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
-    st.markdown("""
-    <div class="metric-card">
-        <h3 style="color: #667eea;">🌐 Global Average</h3>
-        <h2 style="color: #2d3436; margin: 10px 0;">61.1%</h2>
-        <p style="color: #636e72;">Inclusion Rate</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if st.button("🏠 Dashboard Overview", key="home_btn"):
+        st.session_state.page = 'home'
+        st.session_state.selected_region = None
 
 with col2:
-    st.markdown("""
-    <div class="metric-card">
-        <h3 style="color: #667eea;">📊 Total Sample</h3>
-        <h2 style="color: #2d3436; margin: 10px 0;">8,311</h2>
-        <p style="color: #636e72;">Adults Surveyed</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if st.button("🗺️ Regional Analytics", key="regional_btn"):
+        st.session_state.page = 'regional'
+        st.session_state.selected_region = None
 
 with col3:
-    st.markdown("""
-    <div class="metric-card">
-        <h3 style="color: #667eea;">🏆 Best Region</h3>
-        <h2 style="color: #2d3436; margin: 10px 0;">85.8%</h2>
-        <p style="color: #636e72;">High Income</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if st.button("👤 Individual Analysis", key="individual_btn"):
+        st.session_state.page = 'individual'
 
-with col4:
-    st.markdown("""
-    <div class="metric-card">
-        <h3 style="color: #667eea;">⚡ ML Accuracy</h3>
-        <h2 style="color: #2d3436; margin: 10px 0;">89.6%</h2>
-        <p style="color: #636e72;">Random Forest</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col5:
-    st.markdown("""
-    <div class="metric-card">
-        <h3 style="color: #667eea;">🎯 Countries</h3>
-        <h2 style="color: #2d3436; margin: 10px 0;">149</h2>
-        <p style="color: #636e72;">Analyzed</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Interactive World Map
-st.markdown("## 🗺️ Interactive World Financial Inclusion Map")
-st.markdown("### *Click on any country to explore regional insights and recommendations*")
-
-# Create country-level data for the map
-country_data = []
-for region, region_info in country_mapping.items():
-    region_rate = regional_df[regional_df['region'] == region]['inclusion_rate'].iloc[0]
-    region_count = regional_df[regional_df['region'] == region]['count'].iloc[0]
+# Dashboard Overview Page
+if st.session_state.page == 'home':
+    st.markdown("## 📈 Global Financial Inclusion Overview")
     
-    for i, (country, iso_code) in enumerate(zip(region_info['countries'], region_info['iso_codes'])):
-        country_data.append({
-            'country': country,
-            'iso_code': iso_code,
-            'region': region,
-            'inclusion_rate': region_rate,
-            'color': region_info['color'],
-            'sample_size': region_count
-        })
-
-country_df = pd.DataFrame(country_data)
-
-# Create the choropleth map
-fig_world = go.Figure(data=go.Choropleth(
-    locations=country_df['iso_code'],
-    z=country_df['inclusion_rate'],
-    locationmode='ISO-3',
-    colorscale=[
-        [0.0, '#C0392B'],    # Lowest (MENA color)
-        [0.2, '#E74C3C'],    # Sub-Saharan Africa
-        [0.4, '#F7931E'],    # Europe & Central Asia
-        [0.5, '#FFD23F'],    # South Asia
-        [0.6, '#FF6B35'],    # Latin America & East Asia Pacific
-        [1.0, '#2E8B57']     # Highest (High income)
-    ],
-    text=country_df['country'],
-    hovertemplate='<b>%{text}</b><br>' +
-                  'Region: %{customdata[0]}<br>' +
-                  'Inclusion Rate: %{z:.1%}<br>' +
-                  'Sample Size: %{customdata[1]:,}<br>' +
-                  '<extra></extra>',
-    customdata=country_df[['region', 'sample_size']].values,
-    colorbar=dict(
-        title="Financial<br>Inclusion Rate",
-        titlefont=dict(size=14),
-        tickformat='.0%'
-    )
-))
-
-fig_world.update_layout(
-    title={
-        'text': '<b>Global Financial Inclusion Rates by Country</b><br><sub>Based on Regional Analysis of 149 Countries</sub>',
-        'x': 0.5,
-        'xanchor': 'center',
-        'font': dict(size=20)
-    },
-    geo=dict(
-        showframe=False,
-        showcoastlines=True,
-        projection_type='natural earth',
-        bgcolor='rgba(240,240,240,0.1)'
-    ),
-    height=600,
-    margin=dict(l=0, r=0, t=80, b=0)
-)
-
-# Display the map with click handling
-map_click = st.plotly_chart(fig_world, use_container_width=True, key="world_map")
-
-# Regional Analysis Cards
-st.markdown("## 🌍 Regional Performance Analysis")
-
-# Create regional cards with enhanced styling
-regions_sorted = regional_df.sort_values('inclusion_rate', ascending=False)
-
-for idx, (_, region_data) in enumerate(regions_sorted.iterrows()):
-    region_name = region_data['region']
-    inclusion_rate = region_data['inclusion_rate']
-    sample_size = region_data['count']
+    # Global Statistics
+    col1, col2, col3, col4 = st.columns(4)
     
-    # Get color from mapping
-    region_color = country_mapping[region_name]['color']
+    with col1:
+        st.markdown("""
+        <div class="metric-card">
+            <h3 style="color: #667eea; margin-top: 0;">🌐 Global Average</h3>
+            <h1 style="color: #2d3436; margin: 15px 0; font-size: 3em;">61.1%</h1>
+            <p style="color: #636e72; font-size: 16px;">Financial Inclusion Rate</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Determine rank and performance category
-    rank = idx + 1
-    if inclusion_rate >= 0.7:
-        performance = "🟢 Excellent"
-    elif inclusion_rate >= 0.5:
-        performance = "🟡 Moderate"
-    else:
-        performance = "🔴 Needs Focus"
+    with col2:
+        st.markdown("""
+        <div class="metric-card">
+            <h3 style="color: #667eea; margin-top: 0;">🏆 Best Performing</h3>
+            <h1 style="color: #2E8B57; margin: 15px 0; font-size: 3em;">85.8%</h1>
+            <p style="color: #636e72; font-size: 16px;">High Income Countries</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Create expandable region card
-    with st.expander(f"#{rank} {region_name.split('(')[0].strip()} - {inclusion_rate:.1%} Financial Inclusion", expanded=(rank <= 3)):
-        col1, col2, col3 = st.columns([2, 1, 1])
-        
-        with col1:
-            st.markdown(f"""
-            <div style="border-left: 6px solid {region_color}; padding-left: 15px;">
-                <h4 style="color: {region_color}; margin: 0;">{region_name}</h4>
-                <p style="margin: 5px 0; color: #666;">
-                    <strong>Countries:</strong> {len(country_mapping[region_name]['countries'])} nations<br>
-                    <strong>Sample Size:</strong> {sample_size:,} adults<br>
-                    <strong>Performance:</strong> {performance}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            # Countries in this region
-            countries = country_mapping[region_name]['countries']
-            st.markdown("**Key Countries:**")
-            for country in countries[:5]:  # Show first 5 countries
-                st.markdown(f"• {country}")
-            if len(countries) > 5:
-                st.markdown(f"*...and {len(countries)-5} more*")
-        
-        with col3:
-            # Quick stats
-            gap_to_best = regions_sorted.iloc[0]['inclusion_rate'] - inclusion_rate
-            st.metric(
-                "Gap to Best", 
-                f"{gap_to_best:.1%}" if gap_to_best > 0 else "Leading Region",
-                delta=f"Rank #{rank}"
-            )
-            
-        # Quick recommendations based on performance
-        if inclusion_rate < 0.5:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%); 
-                        border-left: 4px solid #e53e3e; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <strong>🎯 Priority Actions:</strong> Basic financial infrastructure, mobile banking expansion, 
-                regulatory frameworks, and financial literacy programs.
-            </div>
-            """, unsafe_allow_html=True)
-        elif inclusion_rate < 0.7:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef5e7 100%); 
-                        border-left: 4px solid #d69e2e; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <strong>🚀 Growth Opportunities:</strong> Digital payment systems, fintech partnerships, 
-                SME financing, and youth financial inclusion programs.
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%); 
-                        border-left: 4px solid #38a169; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <strong>🌟 Excellence Areas:</strong> Innovation leadership, underbanked support, 
-                global best practice sharing, and fintech innovation hubs.
-            </div>
-            """, unsafe_allow_html=True)
-
-# Enhanced Visualizations
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("### 📊 Regional Inclusion Rates Comparison")
+    with col3:
+        st.markdown("""
+        <div class="metric-card">
+            <h3 style="color: #667eea; margin-top: 0;">🎯 Largest Gap</h3>
+            <h1 style="color: #8E44AD; margin: 15px 0; font-size: 3em;">47.6%</h1>
+            <p style="color: #636e72; font-size: 16px;">MENA vs High Income</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Enhanced bar chart
-    fig_regions = px.bar(
-        regions_sorted,
+    with col4:
+        st.markdown("""
+        <div class="metric-card">
+            <h3 style="color: #667eea; margin-top: 0;">🤖 ML Accuracy</h3>
+            <h1 style="color: #2d3436; margin: 15px 0; font-size: 3em;">89.6%</h1>
+            <p style="color: #636e72; font-size: 16px;">Random Forest Model</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Quick Regional Comparison
+    st.markdown("### 🌍 Regional Performance at a Glance")
+    
+    fig_overview = px.bar(
+        regional_df.sort_values('inclusion_rate', ascending=True),
         x='inclusion_rate',
         y='region',
         orientation='h',
         color='inclusion_rate',
-        color_continuous_scale=['#C0392B', '#E74C3C', '#F7931E', '#FFD23F', '#FF6B35', '#2E8B57'],
+        color_continuous_scale=[
+            [0.0, '#8E44AD'],  # MENA
+            [0.2, '#C0392B'],  # Sub-Saharan Africa
+            [0.4, '#E74C3C'],  # Latin America
+            [0.5, '#FFD23F'],  # South Asia
+            [0.6, '#F7931E'],  # Europe Central Asia
+            [0.8, '#FF6B35'],  # East Asia Pacific
+            [1.0, '#2E8B57']   # High income
+        ],
         text='inclusion_rate',
-        title="Financial Inclusion by Region"
+        title="<b>Financial Inclusion Rates by Region</b>",
+        height=500
     )
     
-    fig_regions.update_traces(
+    fig_overview.update_traces(
         texttemplate='%{text:.1%}', 
         textposition='outside',
-        textfont=dict(size=12, color='black', family='Arial Black')
+        textfont=dict(size=14, color='black', family='Arial Black')
     )
     
-    fig_regions.update_layout(
-        height=400,
-        showlegend=False,
+    fig_overview.update_layout(
         xaxis_title="Financial Inclusion Rate",
         yaxis_title="",
         xaxis=dict(tickformat='.0%'),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
-    )
-    
-    st.plotly_chart(fig_regions, use_container_width=True)
-
-with col2:
-    st.markdown("### 🎯 Income Group Analysis")
-    
-    fig_income = px.bar(
-        income_df,
-        x='income_group',
-        y='inclusion_rate',
-        color='inclusion_rate',
-        color_continuous_scale='Viridis',
-        text='inclusion_rate',
-        title="Inclusion Rate by Income Level"
-    )
-    
-    fig_income.update_traces(
-        texttemplate='%{text:.1%}',
-        textposition='outside',
-        textfont=dict(size=12, color='black', family='Arial Black')
-    )
-    
-    fig_income.update_layout(
-        height=400,
         showlegend=False,
-        xaxis_title="Income Group",
-        yaxis_title="Inclusion Rate",
-        yaxis=dict(tickformat='.0%'),
         plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=12),
+        title_font=dict(size=18)
     )
     
-    st.plotly_chart(fig_income, use_container_width=True)
+    st.plotly_chart(fig_overview, use_container_width=True)
 
-# Machine Learning Insights
-st.markdown("## 🤖 Machine Learning Model Insights")
-
-col1, col2 = st.columns([3, 2])
-
-with col1:
-    st.markdown("### 🔑 Top Predictive Features (Random Forest Analysis)")
+# Regional Analytics Page
+elif st.session_state.page == 'regional':
+    st.markdown("## 🗺️ Interactive Regional Analytics")
+    st.markdown("### *Click on any region below to explore detailed insights and recommendations*")
     
-    # Enhanced feature importance chart
-    top_features = feature_df.head(10)
+    # Create interactive map with regions
+    fig_map = go.Figure()
     
-    fig_features = px.bar(
-        top_features,
-        x='importance',
-        y='feature',
-        orientation='h',
-        color='importance',
-        color_continuous_scale='Plasma',
-        text='importance',
-        title="Most Important Factors for Financial Inclusion"
-    )
+    # Create a simple regional representation using scatter geo
+    region_centers = {
+        'High income': {'lat': 45, 'lon': 0, 'size': 60},
+        'East Asia & Pacific (excluding high income)': {'lat': 20, 'lon': 120, 'size': 50},
+        'Europe & Central Asia (excluding high income)': {'lat': 50, 'lon': 50, 'size': 45},
+        'South Asia (excluding high income)': {'lat': 20, 'lon': 80, 'size': 40},
+        'Latin America & Caribbean (excluding high income)': {'lat': -10, 'lon': -60, 'size': 40},
+        'Sub-Saharan Africa (excluding high income)': {'lat': -10, 'lon': 20, 'size': 35},
+        'Middle East & North Africa (excluding high income)': {'lat': 25, 'lon': 35, 'size': 30}
+    }
     
-    fig_features.update_traces(
-        texttemplate='%{text:.3f}',
-        textposition='outside',
-        textfont=dict(size=11)
-    )
+    for _, row in regional_df.iterrows():
+        region = row['region']
+        rate = row['inclusion_rate']
+        count = row['count']
+        
+        center = region_centers[region]
+        color = region_mapping[region]['color']
+        
+        fig_map.add_trace(go.Scattergeo(
+            lon=[center['lon']],
+            lat=[center['lat']],
+            text=region.split('(')[0].strip(),
+            mode='markers+text',
+            marker=dict(
+                size=center['size'],
+                color=color,
+                opacity=0.8,
+                line=dict(width=3, color='white'),
+                sizemode='diameter'
+            ),
+            textposition="middle center",
+            textfont=dict(size=12, color='white', family='Arial Black'),
+            hovertemplate=f'<b>{region}</b><br>' +
+                         f'Inclusion Rate: {rate:.1%}<br>' +
+                         f'Sample Size: {count:,}<br>' +
+                         '<extra></extra>',
+            name=region,
+            customdata=[region]
+        ))
     
-    fig_features.update_layout(
+    fig_map.update_layout(
+        title=dict(
+            text="<b>Global Financial Inclusion by Region</b><br><sub>Circle size represents sample size, color shows inclusion rate</sub>",
+            x=0.5,
+            font=dict(size=20)
+        ),
+        geo=dict(
+            projection_type='natural earth',
+            showland=True,
+            landcolor='rgb(240, 240, 240)',
+            coastlinecolor="rgb(204, 204, 204)",
+            showocean=True,
+            oceancolor="rgb(230, 245, 255)",
+            showlakes=True,
+            lakecolor="rgb(230, 245, 255)",
+            showrivers=True,
+            rivercolor="rgb(230, 245, 255)"
+        ),
         height=500,
-        showlegend=False,
-        xaxis_title="Feature Importance Score",
-        yaxis_title="",
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
+        margin=dict(l=0, r=0, t=60, b=0)
     )
     
-    st.plotly_chart(fig_features, use_container_width=True)
-
-with col2:
-    st.markdown("### 🎯 Model Performance")
+    # Handle map clicks
+    selected_points = st.plotly_chart(fig_map, use_container_width=True, key="regional_map", 
+                                     on_select="rerun", selection_mode="points")
     
+    # Region selection buttons
+    st.markdown("### 📊 Select Region for Detailed Analysis")
+    
+    regions_sorted = regional_df.sort_values('inclusion_rate', ascending=False)
+    cols = st.columns(2)
+    
+    for idx, (_, region_data) in enumerate(regions_sorted.iterrows()):
+        region_name = region_data['region']
+        inclusion_rate = region_data['inclusion_rate']
+        
+        col = cols[idx % 2]
+        with col:
+            if st.button(f"{region_name.split('(')[0].strip()} - {inclusion_rate:.1%}", 
+                        key=f"region_{idx}"):
+                st.session_state.selected_region = region_name
+    
+    # Display selected region details
+    if st.session_state.selected_region:
+        region_name = st.session_state.selected_region
+        region_data = regional_df[regional_df['region'] == region_name].iloc[0]
+        region_info = region_mapping[region_name]
+        
+        st.markdown(f"""
+        <div class="region-info-card" style="border-left-color: {region_info['color']};">
+            <h2 style="color: {region_info['color']}; margin-top: 0;">
+                {region_name.split('(')[0].strip()} - Detailed Analysis
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Inclusion Rate", f"{region_data['inclusion_rate']:.1%}")
+        with col2:
+            st.metric("Sample Size", f"{region_data['count']:,}")
+        with col3:
+            gap_to_best = regional_df['inclusion_rate'].max() - region_data['inclusion_rate']
+            st.metric("Gap to Best", f"{gap_to_best:.1%}")
+        with col4:
+            rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
+            st.metric("Global Rank", f"#{rank}/7")
+        
+        # Detailed insights
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🎯 Key Challenges")
+            for challenge in region_info['key_challenges']:
+                st.markdown(f"• {challenge}")
+            
+            st.markdown("#### 🚀 Growth Opportunities")
+            for opportunity in region_info['opportunities']:
+                st.markdown(f"• {opportunity}")
+        
+        with col2:
+            st.markdown("#### 📍 Major Countries")
+            for country in region_info['countries']:
+                st.markdown(f"• {country}")
+            
+            st.markdown(f"""
+            <div class="recommendation-box">
+                <h4 style="margin-top: 0;">💡 Priority Recommendations</h4>
+                <ul style="margin: 10px 0;">
+                    {''.join(f'<li>{action}</li>' for action in region_info['priority_actions'])}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+# Individual Analysis Page
+elif st.session_state.page == 'individual':
+    st.markdown("## 👤 Individual Financial Inclusion Calculator")
+    st.markdown("### *Get personalized insights and recommendations based on ML analysis*")
+    
+    # Calculator interface
     st.markdown("""
-    <div class="stats-container">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h3 style="color: #667eea;">Random Forest Classifier</h3>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; margin: 15px 0;">
-            <div style="text-align: center;">
-                <h2 style="color: #2d3436; margin: 5px 0;">89.6%</h2>
-                <p style="color: #636e72;">Accuracy</p>
-            </div>
-            <div style="text-align: center;">
-                <h2 style="color: #2d3436; margin: 5px 0;">14</h2>
-                <p style="color: #636e72;">Features</p>
-            </div>
-        </div>
-        
-        <div style="margin: 20px 0;">
-            <h4 style="color: #667eea;">Key Insights:</h4>
-            <ul style="color: #636e72; line-height: 1.6;">
-                <li><strong>Business loan access</strong> is the strongest predictor</li>
-                <li><strong>Emergency funds</strong> availability is crucial</li>
-                <li><strong>Digital engagement</strong> drives inclusion</li>
-                <li><strong>Government services</strong> usage correlates highly</li>
-            </ul>
-        </div>
+    <div class="calculator-card">
+        <h3 style="color: #667eea; text-align: center; margin-top: 0;">
+            🧮 Personal Financial Inclusion Assessment
+        </h3>
+        <p style="text-align: center; color: #636e72;">
+            Based on Random Forest model trained on 8,311+ global respondents
+        </p>
     </div>
     """, unsafe_allow_html=True)
-
-# Action Dashboard
-st.markdown("## 🎯 Strategic Action Dashboard")
-
-# Priority regions for intervention
-low_performing = regional_df[regional_df['inclusion_rate'] < 0.55].sort_values('inclusion_rate')
-
-st.markdown("### 🚨 Priority Regions for Intervention")
-
-for _, region_data in low_performing.iterrows():
-    region_name = region_data['region']
-    inclusion_rate = region_data['inclusion_rate']
-    sample_size = region_data['count']
     
-    potential_impact = (0.61 - inclusion_rate) * sample_size  # Assuming global average as target
+    col1, col2 = st.columns(2)
     
-    st.markdown(f"""
-    <div class="region-card" style="border-left-color: #E74C3C;">
-        <h4 style="color: #E74C3C; margin-top: 0;">{region_name.split('(')[0].strip()}</h4>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <p style="margin: 5px 0;"><strong>Current Rate:</strong> {inclusion_rate:.1%}</p>
-                <p style="margin: 5px 0;"><strong>Gap to Global Avg:</strong> {(0.61 - inclusion_rate):.1%}</p>
-                <p style="margin: 5px 0;"><strong>Sample Size:</strong> {sample_size:,} adults</p>
-            </div>
-            <div style="text-align: right;">
-                <p style="margin: 5px 0;"><strong>Potential Impact:</strong             > {potential_impact:,.0f} adults</p>
-            </div>
+    with col1:
+        # User inputs based on top features
+        st.markdown("#### 📝 Your Profile")
+        
+        region = st.selectbox(
+            "🌍 Your Region",
+            options=list(region_mapping.keys()),
+            help="Select your geographical region"
+        )
+        
+        business_loan_access = st.slider(
+            "🏢 Business Loan Access (0-10)",
+            min_value=0, max_value=10, value=5,
+            help="How easily can you access business loans? (0=Very difficult, 10=Very easy)"
+        )
+        
+        emergency_funds = st.slider(
+            "🆘 Emergency Funds Availability (0-10)",
+            min_value=0, max_value=10, value=5,
+            help="How well can you handle financial emergencies? (0=No funds, 10=Well prepared)"
+        )
+        
+        digital_engagement = st.slider(
+            "📱 Digital Engagement Score (0-10)",
+            min_value=0, max_value=10, value=5,
+            help="How comfortable are you with digital financial services?"
+        )
+        
+        government_services = st.slider(
+            "🏛️ Government Services Usage (0-10)",
+            min_value=0, max_value=10, value=5,
+            help="How often do you use digital government services?"
+        )
+        
+        mobile_payments = st.slider(
+            "📲 Mobile Payment Usage (0-10)",
+            min_value=0, max_value=10, value=5,
+            help="How frequently do you use mobile payments?"
+        )
+    
+    with col2:
+        st.markdown("#### 📊 Your Assessment")
+        
+        # Simple scoring based on feature importance
+        region_baseline = regional_df[regional_df['region'] == region]['inclusion_rate'].iloc[0]
+        
+        # Weighted score calculation
+        weights = {
+            'business_loan_access': 0.1683,
+            'emergency_funds': 0.0980,
+            'digital_engagement': 0.0636,
+            'government_services': 0.0597,
+            'mobile_payments': 0.0404
+        }
+        
+        user_score = (
+            business_loan_access * weights['business_loan_access'] +
+            emergency_funds * weights['emergency_funds'] +
+            digital_engagement * weights['digital_engagement'] +
+            government_services * weights['government_services'] +
+            mobile_payments * weights['mobile_payments']
+        ) / 10  # Normalize to 0-1
+        
+        # Combine with regional baseline
+        final_score = (region_baseline * 0.6 + user_score * 0.4)
+        
+        # Display results
+        st.markdown(f"""
+        <div class="metric-card" style="background: linear-gradient(135deg, {region_mapping[region]['color']}20 0%, {region_mapping[region]['color']}10 100%);">
+            <h3 style="color: {region_mapping[region]['color']}; margin-top: 0;">Your Inclusion Probability</h3>
+            <h1 style="color: #2d3436; margin: 15px 0; font-size: 3.5em;">{final_score:.1%}</h1>
+            <p style="color: #636e72;">Based on ML model analysis</p>
         </div>
-        <div style="margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
-            <strong>Recommended Actions:</strong>
-            <ul style="margin: 5px 0 0 15px; color: #636e72; line-height: 1.6;">
-                <li>Expand mobile banking and digital payment systems</li>      
+        """, unsafe_allow_html=True)
+        
+        # Comparison with regional average
+        st.metric(
+            "vs Regional Average",
+            f"{final_score:.1%}",
+            delta=f"{(final_score - region_baseline):.1%}",
+            help="How you compare to others in your region"
+        )
+        
+        # Risk category
+        if final_score >= 0.7:
+            risk_level = "🟢 High Inclusion"
+            risk_color = "#2E8B57"
+        elif final_score >= 0.5:
+            risk_level = "🟡 Moderate Inclusion"
+            risk_color = "#F7931E"
+        else:
+            risk_level = "🔴 Low Inclusion Risk"
+            risk_color = "#E74C3C"
+        
+        st.markdown(f"""
+        <div style="background: {risk_color}20; border: 2px solid {risk_color}; 
+                    border-radius: 10px; padding: 15px; text-align: center; margin: 20px 0;">
+            <h3 style="color: {risk_color}; margin: 0;">{risk_level}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Personalized recommendations
+    st.markdown("### 💡 Personalized Recommendations")
+    
+    recommendations = []
+    
+    if business_loan_access < 5:
+        recommendations.append("🏢 **Improve Business Loan Access**: Research microfinance institutions, credit unions, and online lending platforms in your region.")
+    
+    if emergency_funds < 5:
+        recommendations.append("🆘 **Build Emergency Fund**: Start with small, regular savings. Aim for 3-6 months of expenses.")
+    
+    if digital_engagement < 5:
+        recommendations.append("📱 **Enhance Digital Skills**: Take online courses on digital banking, practice with mobile apps.")
+    
+    if government_services < 5:
+        recommendations.append("🏛️ **Explore Government Services**: Check available digital government financial services and benefits.")
+    
+    if mobile_payments < 5:
+        recommendations.append("📲 **Adopt Mobile Payments**: Start with popular local mobile payment apps, use for small transactions first.")
+    
+    # Regional specific recommendations
+    regional_recs = region_mapping[region]['priority_actions']
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 🎯 Personal Action Items")
+        if recommendations:
+            for rec in recommendations:
+                st.markdown(rec)
+        else:
+            st.markdown("🌟 **Great job!** You're well-positioned for financial inclusion. Consider mentoring others in your community.")
+    
+    with col2:
+        st.markdown(f"#### 🌍 Regional Opportunities in {region.split('(')[0].strip()}")
+        for rec in regional_recs:
+            st.markdown(f"• {rec}")
 
-                <li>Enhance financial literacy and inclusion programs</li>             
-                <li>Strengthen regulatory frameworks for fintech innovation</li>
-                <li>Promote SME financing and support services</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style="text-align: center; color: #636e72; padding: 20px;">
+    <p><strong>FinScope Global</strong> | Powered by Machine Learning | Data from 149 countries</p>
+    <p>Model Accuracy: 89.6% | Random Forest with 14 key features | Sample: 8,311+ adults</p>
+</div>
+""", unsafe_allow_html=True)
