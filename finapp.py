@@ -147,75 +147,102 @@ def load_data():
     }
     
     # Country mapping with ISO codes for proper map visualization
+    # ===============================================================
+# Final Corrected Country Mapping (Only Given Countries Included)
+# ===============================================================
+
     country_mapping = {
         'High income': {
-            'countries': ['Australia', 'Austria', 'Bahrain', 'Belgium', 'Canada', 'Chile', 'Croatia', 
-                         'Cyprus', 'Czechia', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 
-                         'Greece', 'Hong Kong SAR, China', 'Hungary', 'Iceland', 'Ireland', 'Israel', 'Italy', 
-                         'Japan', 'Korea, Rep.', 'Kuwait', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 
-                         'Netherlands', 'New Zealand', 'Norway', 'Oman', 'Panama', 'Poland', 'Portugal', 
-                         'Qatar', 'Romania', 'Saudi Arabia', 'Singapore', 'Slovak Republic', 'Slovenia', 
-                         'Spain', 'Sweden', 'Switzerland', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay'],
-            'iso_codes': ['AUS', 'AUT', 'BHR', 'BEL', 'CAN', 'CHL', 'HRV', 'CYP', 'CZE', 'DNK', 
-                         'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HKG', 'HUN', 'ISL', 'IRL', 'ISR', 
-                         'ITA', 'JPN', 'KOR', 'KWT', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'NZL', 
-                         'NOR', 'OMN', 'PAN', 'POL', 'PRT', 'QAT', 'ROU', 'SAU', 'SGP', 'SVK', 
-                         'SVN', 'ESP', 'SWE', 'CHE', 'ARE', 'GBR', 'USA', 'URY'],
+            'countries': [
+                'Australia','Austria','Bahrain','Belgium','Canada','Chile','Croatia','Cyprus','Czechia',
+                'Denmark','Estonia','Finland','France','Germany','Greece','Hong Kong SAR, China','Hungary',
+                'Iceland','Ireland','Israel','Italy','Japan','Korea, Rep.','Kuwait','Latvia','Lithuania',
+                'Luxembourg','Malta','Netherlands','New Zealand','Norway','Oman','Panama','Poland',
+                'Portugal','Puerto Rico','Qatar','Romania','Saudi Arabia','Singapore','Slovak Republic',
+                'Slovenia','Spain','Sweden','Switzerland','Taiwan, China','Trinidad and Tobago',
+                'United Arab Emirates','United Kingdom','United States','Uruguay'
+            ],
+            'iso_codes': [
+                'AUS','AUT','BHR','BEL','CAN','CHL','HRV','CYP','CZE','DNK',
+                'EST','FIN','FRA','DEU','GRC','HKG','HUN','ISL','IRL','ISR',
+                'ITA','JPN','KOR','KWT','LVA','LTU','LUX','MLT','NLD','NZL',
+                'NOR','OMN','PAN','POL','PRT','PRI','QAT','ROU','SAU','SGP',
+                'SVK','SVN','ESP','SWE','CHE','TWN','TTO','ARE','GBR','USA','URY'
+            ],
             'color': '#2E8B57'
         },
+
         'East Asia & Pacific (excluding high income)': {
-            'countries': ['Cambodia', 'China', 'Indonesia', 'Lao PDR', 'Malaysia', 'Mongolia', 
-                         'Myanmar', 'Philippines', 'Thailand', 'Vietnam'],
-            'iso_codes': ['KHM', 'CHN', 'IDN', 'LAO', 'MYS', 'MNG', 'MMR', 'PHL', 'THA', 'VNM'],
+            'countries': [
+                'Cambodia','China','Indonesia','Lao PDR','Malaysia','Mongolia',
+                'Myanmar','Philippines','Thailand','Viet Nam'
+            ],
+            'iso_codes': ['KHM','CHN','IDN','LAO','MYS','MNG','MMR','PHL','THA','VNM'],
             'color': '#FF6B35'
         },
+
         'Europe & Central Asia (excluding high income)': {
-            'countries': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia and Herzegovina', 
-                         'Bulgaria', 'Georgia', 'Kazakhstan', 'Kosovo', 'Kyrgyz Republic', 'Moldova', 
-                         'Montenegro', 'North Macedonia', 'Russian Federation', 'Serbia', 'Tajikistan', 
-                         'Turkiye', 'Turkmenistan', 'Ukraine', 'Uzbekistan'],
-            'iso_codes': ['ALB', 'ARM', 'AZE', 'BLR', 'BIH', 'BGR', 'GEO', 'KAZ', 'XKX', 'KGZ', 
-                         'MDA', 'MNE', 'MKD', 'RUS', 'SRB', 'TJK', 'TUR', 'TKM', 'UKR', 'UZB'],
+            'countries': [
+                'Albania','Armenia','Azerbaijan','Belarus','Bosnia and Herzegovina','Bulgaria',
+                'Georgia','Kazakhstan','Kosovo','Kyrgyz Republic','Moldova','Montenegro',
+                'North Macedonia','Russian Federation','Serbia','Tajikistan','Turkiye',
+                'Turkmenistan','Ukraine','Uzbekistan'
+            ],
+            'iso_codes': [
+                'ALB','ARM','AZE','BLR','BIH','BGR','GEO','KAZ','XKX','KGZ',
+                'MDA','MNE','MKD','RUS','SRB','TJK','TUR','TKM','UKR','UZB'
+            ],
             'color': '#F7931E'
         },
+
         'South Asia (excluding high income)': {
-            'countries': ['Afghanistan', 'Bangladesh', 'Bhutan', 'India', 'Maldives', 'Nepal', 
-                         'Pakistan', 'Sri Lanka'],
-            'iso_codes': ['AFG', 'BGD', 'BTN', 'IND', 'MDV', 'NPL', 'PAK', 'LKA'],
+            'countries': [
+                'Afghanistan','Bangladesh','Bhutan','India','Maldives','Nepal','Pakistan','Sri Lanka'
+            ],
+            'iso_codes': ['AFG','BGD','BTN','IND','MDV','NPL','PAK','LKA'],
             'color': '#FFD23F'
         },
+
         'Latin America & Caribbean (excluding high income)': {
-            'countries': ['Argentina', 'Belize', 'Bolivia', 'Brazil', 'Colombia', 'Costa Rica', 
-                         'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', 'Haiti', 
-                         'Honduras', 'Jamaica', 'Mexico', 'Nicaragua', 'Paraguay', 'Peru', 'Venezuela, RB'],
-            'iso_codes': ['ARG', 'BLZ', 'BOL', 'BRA', 'COL', 'CRI', 'DOM', 'ECU', 'SLV', 'GTM', 
-                         'HTI', 'HND', 'JAM', 'MEX', 'NIC', 'PRY', 'PER', 'VEN'],
+            'countries': [
+                'Argentina','Belize','Bolivia','Brazil','Colombia','Costa Rica','Dominican Republic',
+                'Ecuador','El Salvador','Guatemala','Haiti','Honduras','Jamaica','Mexico',
+                'Nicaragua','Paraguay','Peru','Venezuela, RB'
+            ],
+            'iso_codes': [
+                'ARG','BLZ','BOL','BRA','COL','CRI','DOM','ECU','SLV','GTM',
+                'HTI','HND','JAM','MEX','NIC','PRY','PER','VEN'
+            ],
             'color': '#E74C3C'
         },
+
         'Sub-Saharan Africa (excluding high income)': {
-            'countries': ['Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 
-                         'Central African Republic', 'Chad', 'Comoros', 'Congo, Dem. Rep.', 
-                         'Congo, Rep.', 'Cote d\'Ivoire', 'Eswatini', 'Ethiopia', 'Gabon', 
-                         'Gambia, The', 'Ghana', 'Guinea', 'Kenya', 'Lesotho', 'Liberia', 'Madagascar', 
-                         'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Mozambique', 'Namibia', 
-                         'Niger', 'Nigeria', 'Rwanda', 'Senegal', 'Sierra Leone', 'Somalia', 
-                         'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Uganda', 
-                         'Zambia', 'Zimbabwe'],
-            'iso_codes': ['AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CMR', 'CAF', 'TCD', 'COM', 'COD', 
-                         'COG', 'CIV', 'SWZ', 'ETH', 'GAB', 'GMB', 'GHA', 'GIN', 'KEN', 'LSO', 
-                         'LBR', 'MDG', 'MWI', 'MLI', 'MRT', 'MUS', 'MOZ', 'NAM', 'NER', 'NGA', 
-                         'RWA', 'SEN', 'SLE', 'SOM', 'ZAF', 'SSD', 'SDN', 'TZA', 'TGO', 'UGA', 
-                         'ZMB', 'ZWE'],
+            'countries': [
+                'Angola','Benin','Botswana','Burkina Faso','Burundi','Cameroon','Central African Republic',
+                'Chad','Comoros','Congo, Dem. Rep.','Congo, Rep.','Cote d\'Ivoire','Eswatini','Ethiopia',
+                'Gabon','Gambia, The','Ghana','Guinea','Kenya','Lesotho','Liberia','Madagascar','Malawi',
+                'Mali','Mauritania','Mauritius','Mozambique','Namibia','Niger','Nigeria','Rwanda',
+                'Senegal','Sierra Leone','Somalia','South Africa','South Sudan','Sudan','Tanzania',
+                'Togo','Uganda','Zambia','Zimbabwe'
+            ],
+            'iso_codes': [
+                'AGO','BEN','BWA','BFA','BDI','CMR','CAF','TCD','COM','COD','COG','CIV','SWZ','ETH',
+                'GAB','GMB','GHA','GIN','KEN','LSO','LBR','MDG','MWI','MLI','MRT','MUS','MOZ','NAM',
+                'NER','NGA','RWA','SEN','SLE','SOM','ZAF','SSD','SDN','TZA','TGO','UGA','ZMB','ZWE'
+            ],
             'color': '#C0392B'
         },
+
         'Middle East & North Africa (excluding high income)': {
-            'countries': ['Algeria', 'Djibouti', 'Egypt, Arab Rep.', 'Iran, Islamic Rep.', 'Iraq', 'Jordan', 'Lebanon', 
-                         'Libya', 'Morocco', 'Syrian Arab Republic', 'Tunisia', 'West Bank and Gaza', 'Yemen, Rep.'],
-            'iso_codes': ['DZA', 'DJI', 'EGY', 'IRN', 'IRQ', 'JOR', 'LBN', 'LBY', 'MAR', 'SYR', 
-                         'TUN', 'PSE', 'YEM'],
+            'countries': [
+                'Algeria','Djibouti','Egypt, Arab Rep.','Iran, Islamic Rep.','Iraq','Jordan','Lebanon',
+                'Libya','Morocco','Syrian Arab Republic','Tunisia','West Bank and Gaza','Yemen, Rep.'
+            ],
+            'iso_codes': ['DZA','DJI','EGY','IRN','IRQ','JOR','LBN','LBY','MAR','SYR','TUN','PSE','YEM'],
             'color': '#8E44AD'
         }
     }
+
 
     # Regional mapping with colors and country data
     region_mapping = {
