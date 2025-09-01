@@ -585,163 +585,311 @@ elif st.session_state.page == 'regional':
             </div>
             """, unsafe_allow_html=True)
 
-# Individual Analysis Page
+
+# Individual Prediction Page
 elif st.session_state.page == 'individual':
-    st.markdown("## 👤 Individual Financial Inclusion Calculator")
-    st.markdown("### *Get personalized insights and recommendations based on ML analysis*")
+    st.markdown("## 🎯 Individual Financial Inclusion Predictor")
     
-    # Calculator interface
-    st.markdown("""
-    <div class="calculator-card">
-        <h3 style="color: #667eea; text-align: center; margin-top: 0;">
-            🧮 Personal Financial Inclusion Assessment
-        </h3>
-        <p style="text-align: center; color: #636e72;">
-            Based on Random Forest model trained on 8,311+ global respondents
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
     
     with col1:
-        # User inputs based on top features
-        st.markdown("#### 📝 Your Profile")
+        st.markdown("### 👤 Personal Profile")
         
-        region = st.selectbox(
-            "🌍 Your Region",
-            options=list(region_mapping.keys()),
-            help="Select your geographical region"
-        )
-        
-        business_loan_access = st.slider(
-            "🏢 Business Loan Access (0-10)",
-            min_value=0, max_value=10, value=5,
-            help="How easily can you access business loans? (0=Very difficult, 10=Very easy)"
-        )
-        
-        emergency_funds = st.slider(
-            "🆘 Emergency Funds Availability (0-10)",
-            min_value=0, max_value=10, value=5,
-            help="How well can you handle financial emergencies? (0=No funds, 10=Well prepared)"
-        )
-        
-        digital_engagement = st.slider(
-            "📱 Digital Engagement Score (0-10)",
-            min_value=0, max_value=10, value=5,
-            help="How comfortable are you with digital financial services?"
-        )
-        
-        government_services = st.slider(
-            "🏛️ Government Services Usage (0-10)",
-            min_value=0, max_value=10, value=5,
-            help="How often do you use digital government services?"
-        )
-        
-        mobile_payments = st.slider(
-            "📲 Mobile Payment Usage (0-10)",
-            min_value=0, max_value=10, value=5,
-            help="How frequently do you use mobile payments?"
-        )
+        with st.form("prediction_form"):
+            # Demographics
+            st.markdown("**📋 Demographics**")
+            age = st.slider("Age", 18, 80, 35, help="Individual's age in years")
+            income_level = st.selectbox("Income Level", [1, 2, 3, 4], index=1, 
+                                      help="1=Lowest, 4=Highest income quartile")
+            education_level = st.selectbox("Education Level", [1, 2, 3, 4], index=1,
+                                         help="1=Primary, 2=Secondary, 3=Tertiary, 4=Advanced")
+            
+            st.markdown("**💼 Business & Credit**")
+            biz_loan_source = st.slider("Business Loan Access", 0.0, 1.0, 0.5, 0.1,
+                                      help="Access to business loans (0=None, 1=Full access)")
+            biz_loan = st.slider("Business Loan Usage", 0.0, 1.0, 0.3, 0.1,
+                               help="Current business loan usage")
+            emergency_funds = st.slider("Emergency Fund Access", 0.0, 1.0, 0.4, 0.1,
+                                      help="Ability to access emergency funds")
+            
+            st.markdown("**📱 Digital Financial Services**")
+            digital_pay = st.slider("Digital Payment Usage", 0.0, 1.0, 0.6, 0.1,
+                                   help="Regular use of digital payments")
+            digital_pay_acc = st.slider("Digital Payment Account", 0.0, 1.0, 0.5, 0.1,
+                                      help="Has digital payment account")
+            mobile_pay_s_r = st.slider("Mobile Send/Receive", 0.0, 1.0, 0.4, 0.1,
+                                     help="Mobile money send/receive frequency")
+            prefer_digital_fin = st.slider("Digital Finance Preference", 0.0, 1.0, 0.5, 0.1,
+                                         help="Preference for digital financial services")
+            
+            st.markdown("**💰 Savings & Other**")
+            saved_any = st.slider("Savings Behavior", 0.0, 1.0, 0.4, 0.1,
+                                help="Any form of savings")
+            borrowed_any = st.slider("Borrowing Behavior", 0.0, 1.0, 0.3, 0.1,
+                                   help="Any form of borrowing")
+            
+            # Simplified additional features for better UX
+            loan_purpose_group = st.slider("Loan Clarity", 0.0, 1.0, 0.3, 0.1,
+                                         help="Clear purpose for loans")
+            digital_payment_other = st.slider("Other Digital Services", 0.0, 1.0, 0.3, 0.1)
+            govt_payment_recv = st.slider("Government Payments", 0.0, 1.0, 0.2, 0.1)
+            mobile_payment_bill = st.slider("Mobile Bill Payments", 0.0, 1.0, 0.3, 0.1)
+            saved_for_purchase = st.slider("Targeted Savings", 0.0, 1.0, 0.3, 0.1)
+            loan_purpose = st.slider("Loan Planning", 0.0, 1.0, 0.2, 0.1)
+            
+            predict_button = st.form_submit_button("🚀 Predict Financial Inclusion", use_container_width=True)
     
     with col2:
-        st.markdown("#### 📊 Your Assessment")
+        st.markdown("### 📊 Model Performance Metrics")
         
-        # Simple scoring based on feature importance
-        region_baseline = regional_df[regional_df['region'] == region]['inclusion_rate'].iloc[0]
-        
-        # Weighted score calculation
-        weights = {
-            'business_loan_access': 0.1683,
-            'emergency_funds': 0.0980,
-            'digital_engagement': 0.0636,
-            'government_services': 0.0597,
-            'mobile_payments': 0.0404
+        # Enhanced model metrics display
+        metrics_data = {
+            'Metric': ['Accuracy', 'AUC-ROC', 'AUC-PR', 'F1-Score', 'Precision', 'Recall'],
+            'Score': [0.8962, 0.9607, 0.9743, 0.9163, 0.9103, 0.9225],
+            'Category': ['Excellent', 'Excellent', 'Excellent', 'Excellent', 'Excellent', 'Excellent']
         }
         
-        user_score = (
-            business_loan_access * weights['business_loan_access'] +
-            emergency_funds * weights['emergency_funds'] +
-            digital_engagement * weights['digital_engagement'] +
-            government_services * weights['government_services'] +
-            mobile_payments * weights['mobile_payments']
-        ) / 10  # Normalize to 0-1
+        metrics_df = pd.DataFrame(metrics_data)
         
-        # Combine with regional baseline
-        final_score = (region_baseline * 0.6 + user_score * 0.4)
-        
-        # Display results
-        st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, {region_mapping[region]['color']}20 0%, {region_mapping[region]['color']}10 100%);">
-            <h3 style="color: {region_mapping[region]['color']}; margin-top: 0;">Your Inclusion Probability</h3>
-            <h1 style="color: #2d3436; margin: 15px 0; font-size: 3.5em;">{final_score:.1%}</h1>
-            <p style="color: #636e72;">Based on ML model analysis</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Comparison with regional average
-        st.metric(
-            "vs Regional Average",
-            f"{final_score:.1%}",
-            delta=f"{(final_score - region_baseline):.1%}",
-            help="How you compare to others in your region"
+        fig_metrics = px.bar(
+            metrics_df, 
+            x='Metric', 
+            y='Score',
+            color='Score',
+            color_continuous_scale='viridis',
+            title="AI Model Performance Dashboard",
+            text=metrics_df['Score'].apply(lambda x: f'{x:.3f}')
         )
+        fig_metrics.update_layout(
+            height=300,
+            showlegend=False
+        )
+        fig_metrics.update_traces(textposition='outside')
+        st.plotly_chart(fig_metrics, use_container_width=True)
         
-        # Risk category
-        if final_score >= 0.7:
-            risk_level = "🟢 High Inclusion"
-            risk_color = "#2E8B57"
-        elif final_score >= 0.5:
-            risk_level = "🟡 Moderate Inclusion"
-            risk_color = "#F7931E"
-        else:
-            risk_level = "🔴 Low Inclusion Risk"
-            risk_color = "#E74C3C"
-        
-        st.markdown(f"""
-        <div style="background: {risk_color}20; border: 2px solid {risk_color}; 
-                    border-radius: 10px; padding: 15px; text-align: center; margin: 20px 0;">
-            <h3 style="color: {risk_color}; margin: 0;">{risk_level}</h3>
+        # Model confidence indicator
+        st.markdown("""
+        <div class="metric-card success-metric">
+            <h3>🎯 Model Confidence</h3>
+            <h2>96.07% AUC-ROC</h2>
+            <p>High-accuracy predictions you can trust</p>
         </div>
         """, unsafe_allow_html=True)
     
-    # Personalized recommendations
-    st.markdown("### 💡 Personalized Recommendations")
-    
-    recommendations = []
-    
-    if business_loan_access < 5:
-        recommendations.append("🏢 **Improve Business Loan Access**: Research microfinance institutions, credit unions, and online lending platforms in your region.")
-    
-    if emergency_funds < 5:
-        recommendations.append("🆘 **Build Emergency Fund**: Start with small, regular savings. Aim for 3-6 months of expenses.")
-    
-    if digital_engagement < 5:
-        recommendations.append("📱 **Enhance Digital Skills**: Take online courses on digital banking, practice with mobile apps.")
-    
-    if government_services < 5:
-        recommendations.append("🏛️ **Explore Government Services**: Check available digital government financial services and benefits.")
-    
-    if mobile_payments < 5:
-        recommendations.append("📲 **Adopt Mobile Payments**: Start with popular local mobile payment apps, use for small transactions first.")
-    
-    # Regional specific recommendations
-    regional_recs = region_mapping[region]['priority_actions']
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### 🎯 Personal Action Items")
-        if recommendations:
-            for rec in recommendations:
-                st.markdown(rec)
+    # Prediction Results
+    if predict_button:
+        st.markdown("---")
+        st.markdown("## 🔮 Prediction Results")
+        
+        # Prepare input data
+        input_data = pd.DataFrame({
+            'biz_loan_source': [biz_loan_source],
+            'biz_loan': [biz_loan],
+            'emergency_funds': [emergency_funds],
+            'digital_pay': [digital_pay],
+            'digital_pay_acc': [digital_pay_acc],
+            'loan_purpose_group': [loan_purpose_group],
+            'mobile_pay_s_r': [mobile_pay_s_r],
+            'prefer_digital_fin': [prefer_digital_fin],
+            'digital_payment_other': [digital_payment_other],
+            'govt_payment_recv': [govt_payment_recv],
+            'saved_any': [saved_any],
+            'mobile_payment_bill': [mobile_payment_bill],
+            'borrowed_any': [borrowed_any],
+            'saved_for_purchase': [saved_for_purchase],
+            'loan_purpose': [loan_purpose],
+            'age': [age],
+            'income_level': [income_level],
+            'education_level': [education_level]
+        })
+        
+        # Make prediction
+        input_imputed = imputer.transform(input_data)
+        probability = model.predict_proba(input_imputed)[0][1]
+        prediction = model.predict(input_imputed)[0]
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col2:
+            # Enhanced probability gauge
+            fig_gauge = go.Figure(go.Indicator(
+                mode = "gauge+number+delta",
+                value = probability * 100,
+                domain = {'x': [0, 1], 'y': [0, 1]},
+                title = {'text': "Financial Inclusion Probability", 'font': {'size': 24}},
+                delta = {'reference': 68, 'valueformat': '.1f'},  # Global average reference
+                gauge = {
+                    'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                    'bar': {'color': "darkblue", 'thickness': 0.3},
+                    'bgcolor': "white",
+                    'borderwidth': 2,
+                    'bordercolor': "gray",
+                    'steps': [
+                        {'range': [0, 30], 'color': '#ff6b6b'},
+                        {'range': [30, 50], 'color': '#ffa726'},
+                        {'range': [50, 70], 'color': '#ffeb3b'},
+                        {'range': [70, 85], 'color': '#66bb6a'},
+                        {'range': [85, 100], 'color': '#4caf50'}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 90
+                    }
+                }
+            ))
+            fig_gauge.update_layout(height=400, font={'color': "darkblue", 'family': "Arial"})
+            st.plotly_chart(fig_gauge, use_container_width=True)
+        
+        # Detailed interpretation with modern styling
+        if probability >= 0.8:
+            st.markdown(f"""
+            <div class="prediction-result">
+                <h2>🎯 HIGH PROBABILITY ({probability:.1%})</h2>
+                <p><strong>Strong likelihood of having a bank account</strong></p>
+                <p>This individual shows excellent financial inclusion indicators</p>
+            </div>
+            """, unsafe_allow_html=True)
+            recommendation = "**🎯 Strategy**: Focus on premium services and investment products"
+            risk_level = "Low Risk"
+            action = "Retention & Upselling"
+        elif probability >= 0.5:
+            st.markdown(f"""
+            <div class="prediction-result" style="background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);">
+                <h2>⚠️ MODERATE PROBABILITY ({probability:.1%})</h2>
+                <p><strong>Uncertain account ownership status</strong></p>
+                <p>Mixed financial inclusion signals detected</p>
+            </div>
+            """, unsafe_allow_html=True)
+            recommendation = "**📱 Strategy**: Targeted digital services and emergency fund products"
+            risk_level = "Medium Risk"
+            action = "Targeted Outreach"
         else:
-            st.markdown("🌟 **Great job!** You're well-positioned for financial inclusion. Consider mentoring others in your community.")
-    
-    with col2:
-        st.markdown(f"#### 🌍 Regional Opportunities in {region.split('(')[0].strip()}")
-        for rec in regional_recs:
-            st.markdown(f"• {rec}")
+            st.markdown(f"""
+            <div class="prediction-result" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);">
+                <h2>🚨 LOW PROBABILITY ({probability:.1%})</h2>
+                <p><strong>Likely unbanked individual</strong></p>
+                <p>Immediate intervention recommended</p>
+            </div>
+            """, unsafe_allow_html=True)
+            recommendation = "**🚀 Strategy**: Priority intervention with mobile payment focus"
+            risk_level = "High Risk"
+            action = "Immediate Outreach"
+        
+        # Detailed breakdown
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📈 Recommendation Analysis")
+            st.markdown(f"""
+            **Risk Assessment**: {risk_level}  
+            **Recommended Action**: {action}  
+            {recommendation}
+            
+            **🎯 Priority Areas:**
+            - Business loan accessibility
+            - Digital payment adoption
+            - Emergency financial planning
+            """)
+        
+        with col2:
+            st.markdown("### 🔍 Top Contributing Factors")
+            
+            # Calculate feature contributions for this prediction
+            feature_contributions = []
+            for i, feature in enumerate(feature_cols):
+                contribution = input_imputed[0][i] * feature_importance[feature_importance['feature'] == feature]['importance'].iloc[0]
+                feature_contributions.append({
+                    'feature': feature.replace('_', ' ').title(), 
+                    'contribution': contribution,
+                    'value': input_imputed[0][i]
+                })
+            
+            contrib_df = pd.DataFrame(feature_contributions).sort_values('contribution', ascending=False).head(5)
+            
+            for _, row in contrib_df.iterrows():
+                contribution_pct = (row['contribution'] / contrib_df['contribution'].sum()) * 100
+                st.markdown(f"""
+                <div class="feature-chip">
+                    {row['feature']}: {contribution_pct:.1f}% influence
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Visual breakdown of prediction factors
+        st.markdown("### 📊 Prediction Factor Analysis")
+        
+        # Create a comprehensive analysis chart
+        fig_factors = px.bar(
+            contrib_df.head(8), 
+            y='feature', 
+            x='contribution',
+            orientation='h',
+            title='Individual Prediction Drivers',
+            color='contribution',
+            color_continuous_scale='viridis',
+            text=contrib_df.head(8)['contribution'].apply(lambda x: f'{x:.3f}')
+        )
+        fig_factors.update_layout(
+            yaxis=dict(categoryorder='total ascending'),
+            height=400,
+            showlegend=False
+        )
+        fig_factors.update_traces(textposition='auto')
+        st.plotly_chart(fig_factors, use_container_width=True)
+
+# Policy Recommendations Section (shown on both pages)
+st.markdown("---")
+st.markdown("## 📋 Strategic Policy Recommendations")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    <div class="glass-card">
+    <h3>🏢 Business-First Inclusion</h3>
+    <p><strong>29.13%</strong> model importance</p>
+    <p>Prioritize business loan accessibility and entrepreneurial financial services as the primary pathway to financial inclusion.</p>
+    <br>
+    <p><strong>Action Items:</strong></p>
+    <ul>
+    <li>Micro-enterprise lending programs</li>
+    <li>Simplified business account opening</li>
+    <li>SME-focused digital platforms</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="glass-card">
+    <h3>📱 Digital Infrastructure</h3>
+    <p><strong>12.33%</strong> model importance</p>
+    <p>Accelerate mobile payment systems and digital financial literacy to bridge the inclusion gap.</p>
+    <br>
+    <p><strong>Action Items:</strong></p>
+    <ul>
+    <li>National digital ID systems</li>
+    <li>Mobile money interoperability</li>
+    <li>Digital literacy campaigns</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class="glass-card">
+    <h3>🛡️ Emergency Preparedness</h3>
+    <p><strong>9.80%</strong> model importance</p>
+    <p>Link disaster resilience with financial inclusion through emergency savings products and crisis support systems.</p>
+    <br>
+    <p><strong>Action Items:</strong></p>
+    <ul>
+    <li>Emergency savings incentives</li>
+    <li>Crisis support funds</li>
+    <li>Insurance product integration</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
