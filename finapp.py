@@ -146,6 +146,77 @@ def load_data():
                       0.0392, 0.0390, 0.0378, 0.0351, 0.0273, 0.0251, 0.0250]
     }
     
+    # Country mapping with ISO codes for proper map visualization
+    country_mapping = {
+        'High income': {
+            'countries': ['Australia', 'Austria', 'Bahrain', 'Belgium', 'Canada', 'Chile', 'Croatia', 
+                         'Cyprus', 'Czechia', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 
+                         'Greece', 'Hong Kong SAR, China', 'Hungary', 'Iceland', 'Ireland', 'Israel', 'Italy', 
+                         'Japan', 'Korea, Rep.', 'Kuwait', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 
+                         'Netherlands', 'New Zealand', 'Norway', 'Oman', 'Panama', 'Poland', 'Portugal', 
+                         'Qatar', 'Romania', 'Saudi Arabia', 'Singapore', 'Slovak Republic', 'Slovenia', 
+                         'Spain', 'Sweden', 'Switzerland', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay'],
+            'iso_codes': ['AUS', 'AUT', 'BHR', 'BEL', 'CAN', 'CHL', 'HRV', 'CYP', 'CZE', 'DNK', 
+                         'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HKG', 'HUN', 'ISL', 'IRL', 'ISR', 
+                         'ITA', 'JPN', 'KOR', 'KWT', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'NZL', 
+                         'NOR', 'OMN', 'PAN', 'POL', 'PRT', 'QAT', 'ROU', 'SAU', 'SGP', 'SVK', 
+                         'SVN', 'ESP', 'SWE', 'CHE', 'ARE', 'GBR', 'USA', 'URY'],
+            'color': '#2E8B57'
+        },
+        'East Asia & Pacific (excluding high income)': {
+            'countries': ['Cambodia', 'China', 'Indonesia', 'Lao PDR', 'Malaysia', 'Mongolia', 
+                         'Myanmar', 'Philippines', 'Thailand', 'Vietnam'],
+            'iso_codes': ['KHM', 'CHN', 'IDN', 'LAO', 'MYS', 'MNG', 'MMR', 'PHL', 'THA', 'VNM'],
+            'color': '#FF6B35'
+        },
+        'Europe & Central Asia (excluding high income)': {
+            'countries': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia and Herzegovina', 
+                         'Bulgaria', 'Georgia', 'Kazakhstan', 'Kosovo', 'Kyrgyz Republic', 'Moldova', 
+                         'Montenegro', 'North Macedonia', 'Russian Federation', 'Serbia', 'Tajikistan', 
+                         'Turkiye', 'Turkmenistan', 'Ukraine', 'Uzbekistan'],
+            'iso_codes': ['ALB', 'ARM', 'AZE', 'BLR', 'BIH', 'BGR', 'GEO', 'KAZ', 'XKX', 'KGZ', 
+                         'MDA', 'MNE', 'MKD', 'RUS', 'SRB', 'TJK', 'TUR', 'TKM', 'UKR', 'UZB'],
+            'color': '#F7931E'
+        },
+        'South Asia (excluding high income)': {
+            'countries': ['Afghanistan', 'Bangladesh', 'Bhutan', 'India', 'Maldives', 'Nepal', 
+                         'Pakistan', 'Sri Lanka'],
+            'iso_codes': ['AFG', 'BGD', 'BTN', 'IND', 'MDV', 'NPL', 'PAK', 'LKA'],
+            'color': '#FFD23F'
+        },
+        'Latin America & Caribbean (excluding high income)': {
+            'countries': ['Argentina', 'Belize', 'Bolivia', 'Brazil', 'Colombia', 'Costa Rica', 
+                         'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', 'Haiti', 
+                         'Honduras', 'Jamaica', 'Mexico', 'Nicaragua', 'Paraguay', 'Peru', 'Venezuela, RB'],
+            'iso_codes': ['ARG', 'BLZ', 'BOL', 'BRA', 'COL', 'CRI', 'DOM', 'ECU', 'SLV', 'GTM', 
+                         'HTI', 'HND', 'JAM', 'MEX', 'NIC', 'PRY', 'PER', 'VEN'],
+            'color': '#E74C3C'
+        },
+        'Sub-Saharan Africa (excluding high income)': {
+            'countries': ['Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 
+                         'Central African Republic', 'Chad', 'Comoros', 'Congo, Dem. Rep.', 
+                         'Congo, Rep.', 'Cote d\'Ivoire', 'Eswatini', 'Ethiopia', 'Gabon', 
+                         'Gambia, The', 'Ghana', 'Guinea', 'Kenya', 'Lesotho', 'Liberia', 'Madagascar', 
+                         'Malawi', 'Mali', 'Mauritania', 'Mauritius', 'Mozambique', 'Namibia', 
+                         'Niger', 'Nigeria', 'Rwanda', 'Senegal', 'Sierra Leone', 'Somalia', 
+                         'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Uganda', 
+                         'Zambia', 'Zimbabwe'],
+            'iso_codes': ['AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CMR', 'CAF', 'TCD', 'COM', 'COD', 
+                         'COG', 'CIV', 'SWZ', 'ETH', 'GAB', 'GMB', 'GHA', 'GIN', 'KEN', 'LSO', 
+                         'LBR', 'MDG', 'MWI', 'MLI', 'MRT', 'MUS', 'MOZ', 'NAM', 'NER', 'NGA', 
+                         'RWA', 'SEN', 'SLE', 'SOM', 'ZAF', 'SSD', 'SDN', 'TZA', 'TGO', 'UGA', 
+                         'ZMB', 'ZWE'],
+            'color': '#C0392B'
+        },
+        'Middle East & North Africa (excluding high income)': {
+            'countries': ['Algeria', 'Djibouti', 'Egypt, Arab Rep.', 'Iran, Islamic Rep.', 'Iraq', 'Jordan', 'Lebanon', 
+                         'Libya', 'Morocco', 'Syrian Arab Republic', 'Tunisia', 'West Bank and Gaza', 'Yemen, Rep.'],
+            'iso_codes': ['DZA', 'DJI', 'EGY', 'IRN', 'IRQ', 'JOR', 'LBN', 'LBY', 'MAR', 'SYR', 
+                         'TUN', 'PSE', 'YEM'],
+            'color': '#8E44AD'
+        }
+    }
+
     # Regional mapping with colors and country data
     region_mapping = {
         'High income': {
@@ -199,7 +270,7 @@ def load_data():
         }
     }
     
-    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping
+    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -208,7 +279,7 @@ if 'selected_region' not in st.session_state:
     st.session_state.selected_region = None
 
 # Load data
-regional_df, income_df, feature_df, region_mapping = load_data()
+regional_df, income_df, feature_df, region_mapping, country_mapping = load_data()
 
 # Header
 st.markdown("""
@@ -325,77 +396,82 @@ if st.session_state.page == 'home':
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
     st.markdown("## 🗺️ Interactive Regional Analytics")
-    st.markdown("### *Click on any region below to explore detailed insights and recommendations*")
+    st.markdown("### *Click on any region to explore detailed insights and recommendations*")
     
-    # Create interactive map with regions
-    fig_map = go.Figure()
-    
-    # Create a simple regional representation using scatter geo
-    region_centers = {
-        'High income': {'lat': 45, 'lon': 0, 'size': 60},
-        'East Asia & Pacific (excluding high income)': {'lat': 20, 'lon': 120, 'size': 50},
-        'Europe & Central Asia (excluding high income)': {'lat': 50, 'lon': 50, 'size': 45},
-        'South Asia (excluding high income)': {'lat': 20, 'lon': 80, 'size': 40},
-        'Latin America & Caribbean (excluding high income)': {'lat': -10, 'lon': -60, 'size': 40},
-        'Sub-Saharan Africa (excluding high income)': {'lat': -10, 'lon': 20, 'size': 35},
-        'Middle East & North Africa (excluding high income)': {'lat': 25, 'lon': 35, 'size': 30}
-    }
-    
-    for _, row in regional_df.iterrows():
-        region = row['region']
-        rate = row['inclusion_rate']
-        count = row['count']
+    # Create choropleth map with actual countries
+    country_data = []
+    for region, region_info in country_mapping.items():
+        region_rate = regional_df[regional_df['region'] == region]['inclusion_rate'].iloc[0]
+        region_count = regional_df[regional_df['region'] == region]['count'].iloc[0]
         
-        center = region_centers[region]
-        color = region_mapping[region]['color']
-        
-        fig_map.add_trace(go.Scattergeo(
-            lon=[center['lon']],
-            lat=[center['lat']],
-            text=region.split('(')[0].strip(),
-            mode='markers+text',
-            marker=dict(
-                size=center['size'],
-                color=color,
-                opacity=0.8,
-                line=dict(width=3, color='white'),
-                sizemode='diameter'
-            ),
-            textposition="middle center",
-            textfont=dict(size=12, color='white', family='Arial Black'),
-            hovertemplate=f'<b>{region}</b><br>' +
-                         f'Inclusion Rate: {rate:.1%}<br>' +
-                         f'Sample Size: {count:,}<br>' +
-                         '<extra></extra>',
-            name=region,
-            customdata=[region]
-        ))
-    
-    fig_map.update_layout(
-        title=dict(
-            text="<b>Global Financial Inclusion by Region</b><br><sub>Circle size represents sample size, color shows inclusion rate</sub>",
-            x=0.5,
-            font=dict(size=20)
+        for i, (country, iso_code) in enumerate(zip(region_info['countries'], region_info['iso_codes'])):
+            country_data.append({
+                'country': country,
+                'iso_code': iso_code,
+                'region': region,
+                'inclusion_rate': region_rate,
+                'color': region_info['color'],
+                'sample_size': region_count
+            })
+
+    country_df = pd.DataFrame(country_data)
+
+    # Create the choropleth map
+    fig_choropleth = go.Figure(data=go.Choropleth(
+        locations=country_df['iso_code'],
+        z=country_df['inclusion_rate'],
+        locationmode='ISO-3',
+        colorscale=[
+            [0.0, '#8E44AD'],    # MENA
+            [0.15, '#C0392B'],   # Sub-Saharan Africa  
+            [0.30, '#E74C3C'],   # Latin America
+            [0.45, '#FFD23F'],   # South Asia
+            [0.60, '#F7931E'],   # Europe & Central Asia
+            [0.75, '#FF6B35'],   # East Asia Pacific
+            [1.0, '#2E8B57']     # High income
+        ],
+        text=country_df['country'],
+        hovertemplate='<b>%{text}</b><br>' +
+                      'Region: %{customdata[0]}<br>' +
+                      'Inclusion Rate: %{z:.1%}<br>' +
+                      'Sample Size: %{customdata[1]:,}<br>' +
+                      '<extra></extra>',
+        customdata=country_df[['region', 'sample_size']].values,
+        colorbar=dict(
+            title="Financial<br>Inclusion Rate",
+            titlefont=dict(size=14),
+            tickformat='.0%',
+            len=0.8
         ),
+        showscale=True
+    ))
+
+    fig_choropleth.update_layout(
+        title={
+            'text': '<b>Global Financial Inclusion Rates by Country</b><br><sub>Countries color-coded by regional inclusion rates - Click to explore regions</sub>',
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': dict(size=18)
+        },
         geo=dict(
+            showframe=False,
+            showcoastlines=True,
+            coastlinecolor="rgb(180,180,180)",
             projection_type='natural earth',
+            bgcolor='rgba(240,240,240,0.1)',
             showland=True,
-            landcolor='rgb(240, 240, 240)',
-            coastlinecolor="rgb(204, 204, 204)",
+            landcolor='rgb(250,250,250)',
             showocean=True,
-            oceancolor="rgb(230, 245, 255)",
+            oceancolor='rgb(230,245,255)',
             showlakes=True,
-            lakecolor="rgb(230, 245, 255)",
-            showrivers=True,
-            rivercolor="rgb(230, 245, 255)"
+            lakecolor='rgb(230,245,255)'
         ),
-        height=500,
-        margin=dict(l=0, r=0, t=60, b=0)
+        height=600,
+        margin=dict(l=0, r=0, t=80, b=0)
     )
-    
-    # Handle map clicks
-    selected_points = st.plotly_chart(fig_map, use_container_width=True, key="regional_map", 
-                                     on_select="rerun", selection_mode="points")
+
+    # Display the interactive map
+    st.plotly_chart(fig_choropleth, use_container_width=True, key="country_choropleth")
     
     # Region selection buttons
     st.markdown("### 📊 Select Region for Detailed Analysis")
@@ -406,9 +482,24 @@ elif st.session_state.page == 'regional':
     for idx, (_, region_data) in enumerate(regions_sorted.iterrows()):
         region_name = region_data['region']
         inclusion_rate = region_data['inclusion_rate']
+        region_color = country_mapping[region_name]['color']
         
         col = cols[idx % 2]
         with col:
+            # Create custom button styling based on region color
+            button_style = f"""
+            <div style="margin: 10px 0;">
+                <button onclick="this.style.transform='scale(0.95)'" 
+                        style="width: 100%; padding: 15px; border: none; border-radius: 12px;
+                               background: linear-gradient(135deg, {region_color} 0%, {region_color}CC 100%);
+                               color: white; font-weight: bold; font-size: 16px;
+                               box-shadow: 0 4px 15px {region_color}40;
+                               transition: all 0.2s ease; cursor: pointer;">
+                    {region_name.split('(')[0].strip()} - {inclusion_rate:.1%}
+                </button>
+            </div>
+            """
+            
             if st.button(f"{region_name.split('(')[0].strip()} - {inclusion_rate:.1%}", 
                         key=f"region_{idx}"):
                 st.session_state.selected_region = region_name
