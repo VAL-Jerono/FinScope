@@ -113,7 +113,7 @@ st.markdown("""
 
 def load_actual_data():
     # Load your actual dataset here
-    df = pd.read_csv('df_final.csv')
+    df_final = pd.read_csv('df_final.csv')
     return df
 
 def load_data():
