@@ -41,27 +41,69 @@ st.markdown("""
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     }
-    .nav-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 25px;
-        font-weight: bold;
-        font-size: 18px;
-        margin: 10px;
-        cursor: pointer;
+    .demographic-showcase {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+    }
+    .demo-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px 0;
+        text-align: center;
         transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        position: relative;
+        overflow: hidden;
     }
-    .nav-button:hover {
+    .demo-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--accent-color);
+    }
+    .demo-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
-    .nav-button.active {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        box-shadow: 0 8px 25px rgba(118,75,162,0.4);
+    .champion-card { --accent-color: #27AE60; box-shadow: 0 4px 15px rgba(39,174,96,0.1); }
+    .priority-card { --accent-color: #E74C3C; box-shadow: 0 4px 15px rgba(231,76,60,0.1); }
+    .recommendation-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-left: 6px solid;
     }
+    .action-timeline {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .action-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px 0;
+        border-left: 5px solid;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    .immediate { border-left-color: #E74C3C; }
+    .medium-term { border-left-color: #F39C12; }
+    .long-term { border-left-color: #27AE60; }
     .region-info-card {
         background: white;
         border-radius: 15px;
@@ -71,15 +113,7 @@ st.markdown("""
         border-left: 6px solid;
         animation: slideIn 0.5s ease-out;
     }
-    .calculator-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 20px 0;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        border: 2px solid #e9ecef;
-    }
-    .recommendation-box {
+    .kpi-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 20px;
@@ -146,11 +180,30 @@ def load_data():
                       0.0392, 0.0390, 0.0378, 0.0351, 0.0273, 0.0251, 0.0250]
     }
     
-    # Country mapping with ISO codes for proper map visualization
-    # ===============================================================
-# Final Corrected Country Mapping (Only Given Countries Included)
-# ===============================================================
+    # Cleaned demographic data - Top performers and Priority groups
+    top_champions = [
+        {'Group': 'In Labor Force', 'Rate': 0.930, 'Region': 'High Income', 'Icon': '💼'},
+        {'Group': 'Rich 60%', 'Rate': 0.903, 'Region': 'High Income', 'Icon': '💰'},
+        {'Group': 'Higher Education', 'Rate': 0.897, 'Region': 'High Income', 'Icon': '🎓'},
+        {'Group': 'Urban', 'Rate': 0.891, 'Region': 'High Income', 'Icon': '🏙️'},
+        {'Group': 'Men', 'Rate': 0.888, 'Region': 'High Income', 'Icon': '👨'},
+        {'Group': 'Urban', 'Rate': 0.769, 'Region': 'Europe Central Asia', 'Icon': '🏙️'},
+        {'Group': 'Urban', 'Rate': 0.766, 'Region': 'East Asia Pacific', 'Icon': '🏙️'},
+        {'Group': 'Rural', 'Rate': 0.707, 'Region': 'Europe Central Asia', 'Icon': '🌾'}
+    ]
+    
+    priority_groups = [
+        {'Group': 'Age 15-24', 'Rate': 0.267, 'Region': 'MENA', 'Icon': '👶'},
+        {'Group': 'Out of Labor', 'Rate': 0.295, 'Region': 'MENA', 'Icon': '❌'},
+        {'Group': 'Women', 'Rate': 0.300, 'Region': 'MENA', 'Icon': '👩'},
+        {'Group': 'Poor 40%', 'Rate': 0.304, 'Region': 'MENA', 'Icon': '💸'},
+        {'Group': 'Primary Education', 'Rate': 0.330, 'Region': 'MENA', 'Icon': '📚'},
+        {'Group': 'Out of Labor', 'Rate': 0.330, 'Region': 'Sub-Saharan Africa', 'Icon': '❌'},
+        {'Group': 'Poor 40%', 'Rate': 0.333, 'Region': 'Sub-Saharan Africa', 'Icon': '💸'},
+        {'Group': 'Primary Education', 'Rate': 0.337, 'Region': 'Sub-Saharan Africa', 'Icon': '📚'}
+    ]
 
+    # Country mapping with ISO codes for proper map visualization
     country_mapping = {
         'High income': {
             'countries': [
@@ -243,61 +296,339 @@ def load_data():
         }
     }
 
-
-    # Regional mapping with colors and country data
+    # Enhanced regional mapping with comprehensive, data-driven recommendations
     region_mapping = {
         'High income': {
             'color': '#2E8B57',
             'countries': ['USA', 'Germany', 'Japan', 'UK', 'France', 'Canada', 'Australia'],
-            'key_challenges': ['Digital divide in rural areas', 'Aging population banking needs'],
-            'opportunities': ['Fintech innovation', 'Sustainable finance', 'Digital banking expansion'],
-            'priority_actions': ['AI-driven personalized services', 'Green finance products', 'Elderly-friendly digital solutions']
+            'key_challenges': [
+                'Digital divide among elderly populations (65+)',
+                'Rural banking access gaps in remote areas',
+                'Fintech regulation balancing innovation with consumer protection',
+                'Financial literacy gaps despite high access rates'
+            ],
+            'opportunities': [
+                'AI-driven personalized financial services',
+                'Green finance and sustainable banking leadership',
+                'Cross-border digital payments and open banking',
+                'Advanced fraud detection and cybersecurity'
+            ],
+            'immediate_actions': [
+                'Launch comprehensive digital literacy programs targeting 65+ demographic',
+                'Deploy mobile banking units to underserved rural communities',
+                'Establish regulatory sandboxes for fintech innovation testing',
+                'Create senior-friendly banking interfaces and support systems'
+            ],
+            'medium_term': [
+                'Implement AI-powered financial advisory services for mass market',
+                'Develop comprehensive ESG (Environmental, Social, Governance) banking standards',
+                'Build interoperable digital identity frameworks across countries',
+                'Create inclusive design standards for all banking technologies'
+            ],
+            'long_term': [
+                'Pioneer quantum-secure financial infrastructure',
+                'Lead global financial inclusion measurement and reporting standards',
+                'Achieve carbon-neutral banking operations by 2030',
+                'Establish global fintech regulatory coordination mechanisms'
+            ],
+            'success_metrics': [
+                'Achieve 95% digital banking adoption by 2030',
+                'Ensure 100% rural area access within 10km radius',
+                'Reduce elderly exclusion rate below 5%',
+                'Maintain global leadership in financial innovation'
+            ],
+            'budget_allocation': {
+                'Technology & Innovation': '40%',
+                'Rural Infrastructure': '25%',
+                'Elderly & Accessibility': '20%',
+                'Sustainability Initiatives': '15%'
+            }
         },
+        
         'East Asia & Pacific (excluding high income)': {
             'color': '#FF6B35',
             'countries': ['China', 'Indonesia', 'Thailand', 'Philippines', 'Vietnam', 'Malaysia'],
-            'key_challenges': ['Rural-urban divide', 'Complex regulatory environments', 'Infrastructure gaps'],
-            'opportunities': ['Mobile payment growth', 'E-commerce integration', 'Cross-border payments'],
-            'priority_actions': ['Digital wallet expansion', 'Rural connectivity programs', 'Regulatory harmonization']
+            'key_challenges': [
+                'Massive rural-urban digital divide (23% gap between urban and rural)',
+                'Complex cross-border payment systems and currency fluctuations',
+                'Regulatory fragmentation across diverse political systems',
+                'Infrastructure gaps in remote island and mountain communities'
+            ],
+            'opportunities': [
+                'World\'s largest mobile-first banking market potential',
+                'E-commerce and digital marketplace integration',
+                'Regional payment corridor development (ASEAN+3)',
+                'Agricultural value chain financing innovation'
+            ],
+            'immediate_actions': [
+                'Deploy rural 4G/5G infrastructure specifically for mobile banking access',
+                'Launch unified regional QR code payment standards across ASEAN',
+                'Establish cross-border fintech regulatory cooperation framework',
+                'Create disaster-resilient payment systems for typhoon/earthquake zones'
+            ],
+            'medium_term': [
+                'Build unified regional digital wallet ecosystem with currency conversion',
+                'Develop agricultural value chain financing platforms for smallholder farmers',
+                'Implement blockchain-based trade finance networks for SME exporters',
+                'Create regional financial education programs in local languages'
+            ],
+            'long_term': [
+                'Pioneer blockchain-based cross-border trade finance networks',
+                'Lead ASEAN financial integration and common payment infrastructure',
+                'Establish regional cryptocurrency and CBDC frameworks',
+                'Achieve full financial inclusion in rural areas by 2035'
+            ],
+            'success_metrics': [
+                'Reach 80% mobile payment adoption across all demographics',
+                'Achieve 90% SME access to credit within 5 years',
+                'Reduce remittance costs below $1 per $100 transferred',
+                'Close rural-urban inclusion gap to under 10%'
+            ],
+            'budget_allocation': {
+                'Mobile Infrastructure': '45%',
+                'Rural & Agricultural Programs': '30%',
+                'Regional Integration': '15%',
+                'SME Financing': '10%'
+            }
         },
+        
         'Europe & Central Asia (excluding high income)': {
             'color': '#F7931E',
             'countries': ['Russia', 'Turkey', 'Kazakhstan', 'Ukraine', 'Romania', 'Bulgaria'],
-            'key_challenges': ['Economic volatility', 'Legacy banking systems', 'Currency instability'],
-            'opportunities': ['Digital transformation', 'EU integration benefits', 'Remittance corridors'],
-            'priority_actions': ['Modern payment infrastructure', 'Cross-border integration', 'SME financing']
+            'key_challenges': [
+                'Economic volatility and currency instability affecting savings behavior',
+                'Legacy banking systems requiring modernization',
+                'EU integration complexity for aspiring member states',
+                'Post-conflict financial reconstruction in affected areas'
+            ],
+            'opportunities': [
+                'Digital transformation acceleration post-COVID',
+                'EU Single Euro Payments Area (SEPA) integration benefits',
+                'Large diaspora remittance corridor optimization',
+                'Energy sector transformation financing opportunities'
+            ],
+            'immediate_actions': [
+                'Modernize core banking systems with cloud-based technology',
+                'Launch currency-hedged savings products to protect against volatility',
+                'Create EU payment directive compliance roadmaps for candidate countries',
+                'Establish emergency financial services for conflict-affected populations'
+            ],
+            'medium_term': [
+                'Build cross-border SME lending platforms leveraging EU programs',
+                'Implement comprehensive open banking standards across the region',
+                'Develop diaspora-focused investment and remittance products',
+                'Create regional fintech hubs in major cities (Warsaw, Istanbul, Kyiv)'
+            ],
+            'long_term': [
+                'Achieve full EU payment integration compliance for all candidate countries',
+                'Pioneer post-conflict financial reconstruction and inclusion models',
+                'Lead Eastern European fintech ecosystem development',
+                'Establish regional financial stability mechanisms'
+            ],
+            'success_metrics': [
+                'Achieve 70% digital banking adoption across all countries',
+                'Complete EU payment integration for candidate countries by 2027',
+                'Increase SME lending by 50% through cross-border platforms',
+                'Reduce remittance costs to below 3% of transfer value'
+            ],
+            'budget_allocation': {
+                'Banking System Modernization': '40%',
+                'EU Integration Compliance': '25%',
+                'SME & Entrepreneurship': '20%',
+                'Post-Conflict Reconstruction': '15%'
+            }
         },
+        
         'South Asia (excluding high income)': {
             'color': '#FFD23F',
             'countries': ['India', 'Bangladesh', 'Pakistan', 'Sri Lanka', 'Nepal', 'Afghanistan'],
-            'key_challenges': ['Large unbanked population', 'Documentation barriers', 'Gender gaps'],
-            'opportunities': ['Digital identity systems', 'Mobile-first approaches', 'Government support'],
-            'priority_actions': ['Jan Dhan-style programs', 'Women-focused initiatives', 'Agent banking networks']
+            'key_challenges': [
+                'Massive unbanked population (400+ million adults)',
+                'Significant gender inclusion gap (48% women vs 57% men)',
+                'Documentation and identity verification barriers',
+                'Low financial literacy rates, especially in rural areas'
+            ],
+            'opportunities': [
+                'Digital identity systems success (Aadhaar model) replicable across region',
+                'Mobile-first leapfrogging traditional banking infrastructure',
+                'Government payment digitization and direct benefit transfers',
+                'Massive youth population driving fintech adoption'
+            ],
+            'immediate_actions': [
+                'Scale biometric-based account opening systems (replicating Aadhaar success)',
+                'Establish women-only banking centers and female agent networks',
+                'Digitize all government welfare and subsidy payment systems',
+                'Launch multilingual financial literacy programs via mobile platforms'
+            ],
+            'medium_term': [
+                'Build extensive agent banking networks reaching every village',
+                'Develop alternative credit scoring using mobile phone and digital footprint data',
+                'Implement blockchain-based land and property record systems',
+                'Create region-wide instant payment systems with interoperability'
+            ],
+            'long_term': [
+                'Achieve universal financial inclusion (80%+ account ownership) by 2030',
+                'Lead global digital identity and inclusion standards development',
+                'Pioneer climate-resilient agricultural finance and insurance systems',
+                'Establish South Asian financial integration framework'
+            ],
+            'success_metrics': [
+                'Reach 80% account ownership across all demographic groups',
+                'Reduce gender gap in financial inclusion below 5%',
+                'Deploy 1 million+ banking agents across rural areas',
+                'Digitize 95% of government-to-person payments'
+            ],
+            'budget_allocation': {
+                'Rural Infrastructure & Agents': '50%',
+                'Women\'s Financial Inclusion': '25%',
+                'Digital Identity Systems': '15%',
+                'Agricultural Finance': '10%'
+            }
         },
+        
         'Latin America & Caribbean (excluding high income)': {
             'color': '#E74C3C',
             'countries': ['Brazil', 'Mexico', 'Argentina', 'Colombia', 'Peru', 'Chile'],
-            'key_challenges': ['Economic informality', 'Credit access barriers', 'Income inequality'],
-            'opportunities': ['Fintech boom', 'Remittance integration', 'Government digitization'],
-            'priority_actions': ['Alternative credit scoring', 'Digital remittances', 'Financial education']
+            'key_challenges': [
+                'High informality rates (60%+ in some countries) limiting credit access',
+                'Income inequality creating financial access barriers',
+                'High remittance costs from USA (average 6.5% of transfer)',
+                'Limited credit history and collateral for traditional banking'
+            ],
+            'opportunities': [
+                'Rapidly growing fintech ecosystem and innovation',
+                'Large diaspora creating remittance and investment flows',
+                'Government service digitization and conditional cash transfers',
+                'Strong mobile penetration enabling digital-first approaches'
+            ],
+            'immediate_actions': [
+                'Launch alternative credit scoring systems for informal workers using utility and mobile data',
+                'Create low-cost digital remittance corridors with USA and Spain',
+                'Digitize all conditional cash transfer and social protection programs',
+                'Establish fintech regulatory frameworks balancing innovation and protection'
+            ],
+            'medium_term': [
+                'Build region-wide instant payment networks (building on PIX success)',
+                'Develop comprehensive micro-insurance products for informal sector',
+                'Create fintech accelerators and regulatory sandboxes in major cities',
+                'Implement regional KYC and AML harmonization'
+            ],
+            'long_term': [
+                'Pioneer AI-driven financial inclusion models for informal economies',
+                'Lead regional economic integration through financial technology',
+                'Achieve carbon-neutral payment systems and green finance leadership',
+                'Establish Latin American fintech unicorn ecosystem'
+            ],
+            'success_metrics': [
+                'Include 70% of informal sector workers in financial system',
+                'Reduce remittance costs below $5 per $100 transferred',
+                'Achieve 90% government payment digitization',
+                'Create 50+ fintech unicorns by 2030'
+            ],
+            'budget_allocation': {
+                'Fintech Ecosystem Development': '35%',
+                'Informal Sector Inclusion': '30%',
+                'Remittance Optimization': '20%',
+                'Government Digitization': '15%'
+            }
         },
+        
         'Sub-Saharan Africa (excluding high income)': {
             'color': '#C0392B',
             'countries': ['Nigeria', 'Kenya', 'South Africa', 'Ghana', 'Tanzania', 'Ethiopia'],
-            'key_challenges': ['Infrastructure limitations', 'Low income levels', 'Distance to banks'],
-            'opportunities': ['Mobile money success', 'Agent banking', 'Agricultural finance'],
-            'priority_actions': ['Mobile money expansion', 'Agent network growth', 'Agricultural value chain finance']
+            'key_challenges': [
+                'Limited traditional banking infrastructure (1 branch per 20,000+ adults)',
+                'Low and irregular income levels limiting savings capacity',
+                'High transaction costs due to infrastructure limitations',
+                'Limited electricity grid affecting digital payment systems'
+            ],
+            'opportunities': [
+                'World-leading mobile money innovation and adoption',
+                'Extensive agent banking network potential',
+                'Agricultural value chain financing innovation opportunities',
+                'Young, mobile-native population driving digital adoption'
+            ],
+            'immediate_actions': [
+                'Expand mobile money interoperability across all countries and borders',
+                'Train and deploy 500,000+ new banking agents in rural areas',
+                'Install satellite-based internet infrastructure for remote banking access',
+                'Launch solar-powered payment terminals and charging stations'
+            ],
+            'medium_term': [
+                'Build comprehensive agricultural value chain financing platforms',
+                'Create diaspora investment facilitation systems and platforms',
+                'Develop climate-smart insurance and resilience products',
+                'Establish regional mobile money and payment integration'
+            ],
+            'long_term': [
+                'Lead global mobile money and agent banking innovation',
+                'Pioneer space-based financial infrastructure for remote areas',
+                'Achieve energy-independent banking and payment systems',
+                'Create African Continental Free Trade Area payment integration'
+            ],
+            'success_metrics': [
+                'Reach 60% mobile money usage across all demographics',
+                'Ensure banking agent within 5km of every community',
+                'Achieve 50% of smallholder farmers with access to credit',
+                'Reduce transaction costs below 2% of transfer value'
+            ],
+            'budget_allocation': {
+                'Mobile & Digital Infrastructure': '45%',
+                'Agent Network Expansion': '25%',
+                'Agricultural Finance': '20%',
+                'Energy & Connectivity': '10%'
+            }
         },
+        
         'Middle East & North Africa (excluding high income)': {
             'color': '#8E44AD',
             'countries': ['Egypt', 'Morocco', 'Jordan', 'Tunisia', 'Algeria', 'Lebanon'],
-            'key_challenges': ['Political instability', 'Youth unemployment', 'Regulatory restrictions'],
-            'opportunities': ['Islamic finance growth', 'Oil revenue diversification', 'Regional integration'],
-            'priority_actions': ['Sharia-compliant products', 'Youth banking programs', 'Digital government services']
+            'key_challenges': [
+                'Political instability affecting economic confidence and investment',
+                'Youth unemployment rates (25%+ in many countries) limiting inclusion',
+                'Regulatory restrictions on financial innovation and fintech',
+                'Limited women\'s economic participation due to social and legal barriers'
+            ],
+            'opportunities': [
+                'Islamic finance market growth and Sharia-compliant innovation',
+                'Oil revenue diversification creating investment in financial inclusion',
+                'Government digitization initiatives and e-government services',
+                'Strategic location for Africa-Europe-Asia payment corridors'
+            ],
+            'immediate_actions': [
+                'Launch comprehensive Sharia-compliant digital banking platforms',
+                'Create dedicated youth entrepreneurship financing programs with lower requirements',
+                'Digitize government salary, pension, and social service payments',
+                'Establish women-only banking centers and female-focused financial products'
+            ],
+            'medium_term': [
+                'Build regional Islamic fintech ecosystem and innovation hubs',
+                'Develop sovereign wealth fund investments in financial inclusion technology',
+                'Create post-conflict financial reconstruction and stability frameworks',
+                'Implement region-wide Islamic banking and finance standards'
+            ],
+            'long_term': [
+                'Lead global Islamic fintech innovation and standard-setting',
+                'Pioneer oil-to-digital economy transition models for resource-rich countries',
+                'Achieve regional financial market integration and payment systems',
+                'Establish MENA as bridge for Africa-Europe-Asia financial flows'
+            ],
+            'success_metrics': [
+                'Reach 50% Islamic finance adoption among Muslim populations',
+                'Achieve 40% youth banking and financial service inclusion',
+                'Digitize 80% of government payments and services',
+                'Reduce gender gap in financial inclusion below 15%'
+            ],
+            'budget_allocation': {
+                'Islamic Finance Innovation': '35%',
+                'Youth Programs': '30%',
+                'Government Digitization': '20%',
+                'Women\'s Inclusion': '15%'
+            }
         }
     }
     
-    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping
+    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping, top_champions, priority_groups
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -306,7 +637,7 @@ if 'selected_region' not in st.session_state:
     st.session_state.selected_region = None
 
 # Load data
-regional_df, income_df, feature_df, region_mapping, country_mapping = load_data()
+regional_df, income_df, feature_df, region_mapping, country_mapping, top_champions, priority_groups = load_data()
 
 # Header
 st.markdown("""
@@ -378,7 +709,7 @@ if st.session_state.page == 'home':
         </div>
         """, unsafe_allow_html=True)
     
-    # Quick Regional Comparison
+    # Quick Regional Comparison - Clean and beautiful
     st.markdown("### 🌍 Regional Performance at a Glance")
     
     fig_overview = px.bar(
@@ -398,7 +729,7 @@ if st.session_state.page == 'home':
         ],
         text='inclusion_rate',
         title="<b>Financial Inclusion Rates by Region</b>",
-        height=400
+        height=500
     )
     
     fig_overview.update_traces(
@@ -415,220 +746,60 @@ if st.session_state.page == 'home':
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
         font=dict(size=12), 
-        title_font=dict(size=18)
+        title_font=dict(size=18),
+        yaxis=dict(title_font_size=12, tickfont_size=11)
     )
     
     st.plotly_chart(fig_overview, use_container_width=True)
     
+    # Clean Demographics Section
+    st.markdown("### 🏆 Financial Inclusion Champions")
+    st.markdown("*Top-performing demographic groups leading financial inclusion globally*")
     
-# Enhanced Visualizations Section
-    st.markdown("---")
-    st.markdown("## 📊 Strategic Target Group Analysis")
-    st.markdown("*Data-driven insights for policy makers and financial inclusion practitioners*")
+    st.markdown("""
+    <div class="demographic-showcase">
+    """, unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 🏆 Financial Inclusion Champions")
-        st.markdown("*Demographic groups with highest inclusion rates across regions*")
-        
-        # Champions data from your analysis
-        champions_data = {
-            'Demographic': ['Urban Dwellers', 'Higher Education', 'In Labor Force', 'Richest 60%', 'Men', 'Rural Areas'],
-            'High Income': [0.891, 0.897, 0.930, 0.903, 0.888, 0.879],
-            'East Asia Pacific': [0.766, 0.677, 0.597, 0.637, 0.576, 0.670],
-            'Europe Central Asia': [0.769, 0.638, 0.704, 0.626, 0.596, 0.707],
-            'Latin America': [0.642, 0.564, 0.569, 0.559, 0.527, 0.556],
-            'Sub-Saharan Africa': [0.645, 0.570, 0.500, 0.497, 0.468, 0.516],
-            'South Asia': [0.607, 0.597, 0.560, 0.537, 0.533, 0.596],
-            'MENA': [0.491, 0.425, 0.540, 0.448, 0.476, 0.392]
-        }
-        
-        champions_df = pd.DataFrame(champions_data)
-        champions_melted = champions_df.melt(id_vars='Demographic', var_name='Region', value_name='Inclusion_Rate')
-        
-        fig_champions = px.bar(
-            champions_melted,
-            x='Inclusion_Rate',
-            y='Demographic',
-            color='Region',
-            orientation='h',
-            title="Champion Groups by Region",
-            color_discrete_map={
-                'High Income': '#2E8B57',
-                'East Asia Pacific': '#FF6B35',
-                'Europe Central Asia': '#F7931E',
-                'Latin America': '#E74C3C',
-                'Sub-Saharan Africa': '#C0392B',
-                'South Asia': '#FFD23F',
-                'MENA': '#8E44AD'
-            }
-        )
-        
-        fig_champions.update_layout(
-            height=450,
-            xaxis_title="Financial Inclusion Rate",
-            yaxis_title="",
-            xaxis=dict(tickformat='.0%'),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=11),
-            title_font=dict(size=14),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        )
-        
-        st.plotly_chart(fig_champions, use_container_width=True)
-    
-    with col2:
-        st.markdown("### 🎯 Priority Target Groups")
-        st.markdown("*Demographic groups requiring urgent attention and intervention*")
-        
-        # Excluded groups data from your analysis
-        excluded_data = {
-            'Demographic': ['Primary Education', 'Out of Labor Force', 'Poorest 40%', 'Ages 15-24', 'Women', 'All Population'],
-            'High Income': [0.769, 0.804, 0.834, 0.781, 0.855, 0.882],
-            'East Asia Pacific': [0.457, 0.489, 0.484, 0.543, 0.576, 0.564],
-            'Europe Central Asia': [0.390, 0.448, 0.484, 0.428, 0.540, 0.557],
-            'Latin America': [0.368, 0.386, 0.381, 0.403, 0.454, 0.496],
-            'Sub-Saharan Africa': [0.337, 0.330, 0.333, 0.361, 0.383, 0.394],
-            'South Asia': [0.419, 0.432, 0.401, 0.431, 0.435, 0.440],
-            'MENA': [0.330, 0.295, 0.304, 0.267, 0.300, 0.378]
-        }
-        
-        excluded_df = pd.DataFrame(excluded_data)
-        excluded_melted = excluded_df.melt(id_vars='Demographic', var_name='Region', value_name='Inclusion_Rate')
-        
-        fig_excluded = px.bar(
-            excluded_melted,
-            x='Inclusion_Rate',
-            y='Demographic',
-            color='Region',
-            orientation='h',
-            title="Priority Target Groups by Region",
-            color_discrete_map={
-                'High Income': '#2E8B57',
-                'East Asia Pacific': '#FF6B35',
-                'Europe Central Asia': '#F7931E',
-                'Latin America': '#E74C3C',
-                'Sub-Saharan Africa': '#C0392B',
-                'South Asia': '#FFD23F',
-                'MENA': '#8E44AD'
-            }
-        )
-        
-        fig_excluded.update_layout(
-            height=450,
-            xaxis_title="Financial Inclusion Rate",
-            yaxis_title="",
-            xaxis=dict(tickformat='.0%'),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=11),
-            title_font=dict(size=14),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        )
-        
-        st.plotly_chart(fig_excluded, use_container_width=True)
-    
-    # Gender Gap Analysis
-    st.markdown("---")
-    st.markdown("### 👥 Gender Gap Analysis Across Regions")
-    st.markdown("*Critical insights on gender disparities in financial inclusion*")
-    
-    # Gender gap data from your analysis
-    gender_gap_data = {
-        'Region': [
-            'MENA', 'South Asia', 'Sub-Saharan Africa', 'Latin America', 
-            'Europe Central Asia', 'High Income', 'East Asia Pacific'
-        ],
-        'Men': [0.476, 0.533, 0.468, 0.527, 0.596, 0.888, 0.576],
-        'Women': [0.300, 0.435, 0.383, 0.454, 0.540, 0.855, 0.576],
-        'Gap': [0.176, 0.099, 0.084, 0.073, 0.056, 0.033, 0.001]
-    }
-    
-    gender_df = pd.DataFrame(gender_gap_data)
-    gender_df = gender_df.sort_values('Gap', ascending=False)
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        # Side-by-side gender comparison
-        fig_gender = go.Figure()
-        
-        # Men bars
-        fig_gender.add_trace(go.Bar(
-            name='Men',
-            x=gender_df['Region'],
-            y=gender_df['Men'],
-            marker_color='#2E86AB',
-            text=[f"{val:.1%}" for val in gender_df['Men']],
-            textposition='outside'
-        ))
-        
-        # Women bars
-        fig_gender.add_trace(go.Bar(
-            name='Women',
-            x=gender_df['Region'],
-            y=gender_df['Women'],
-            marker_color='#F24236',
-            text=[f"{val:.1%}" for val in gender_df['Women']],
-            textposition='outside'
-        ))
-        
-        # Add gap annotations
-        for i, (region, gap) in enumerate(zip(gender_df['Region'], gender_df['Gap'])):
-            max_val = max(gender_df['Men'].iloc[i], gender_df['Women'].iloc[i])
-            fig_gender.add_annotation(
-                x=i,
-                y=max_val + 0.05,
-                text=f"Gap: {gap:.1%}",
-                showarrow=False,
-                font=dict(size=12, color='black', family='Arial Black'),
-                bgcolor="rgba(255,255,255,0.8)",
-                bordercolor="black",
-                borderwidth=1
-            )
-        
-        fig_gender.update_layout(
-            title="Gender Inclusion Rates and Gaps by Region",
-            xaxis_title="Region",
-            yaxis_title="Financial Inclusion Rate",
-            yaxis=dict(tickformat='.0%', range=[0, 1]),
-            barmode='group',
-            height=450,
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=11),
-            title_font=dict(size=14),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        )
-        
-        st.plotly_chart(fig_gender, use_container_width=True)
-    
-    with col2:
-        st.markdown("#### 🚨 Gender Gap Severity")
-        
-        # Create gap severity indicators
-        for _, row in gender_df.iterrows():
-            gap_severity = "🔴 Critical" if row['Gap'] > 0.15 else "🟡 Moderate" if row['Gap'] > 0.05 else "🟢 Low"
+    cols = st.columns(4)
+    for idx, champion in enumerate(top_champions):
+        col = cols[idx % 4]
+        with col:
             st.markdown(f"""
-            **{row['Region'][:20]}**  
-            Gap: **{row['Gap']:.1%}** {gap_severity}
-            """)
-        
-        st.markdown("---")
-        st.markdown("#### 💡 Key Insights")
-        st.markdown("""
-        • **MENA** has the largest gender gap (17.6pp)
-        • **East Asia Pacific** achieves gender parity (0.1pp)
-        • **High income** regions show smallest absolute gaps
-        • **South Asia** needs targeted women's programs
-        """)
+            <div class="demo-card champion-card">
+                <div style="font-size: 24px; margin-bottom: 10px;">{champion['Icon']}</div>
+                <h3 style="margin: 0; color: #27AE60; font-size: 28px;">{champion['Rate']:.0%}</h3>
+                <p style="margin: 8px 0; font-weight: bold; color: #2c3e50;">{champion['Group']}</p>
+                <small style="color: #7f8c8d;">{champion['Region']}</small>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("### 🎯 Priority Target Groups")
+    st.markdown("*Demographic groups requiring urgent intervention and focused support*")
+    
+    st.markdown("""
+    <div class="demographic-showcase">
+    """, unsafe_allow_html=True)
+    
+    cols = st.columns(4)
+    for idx, priority in enumerate(priority_groups):
+        col = cols[idx % 4]
+        with col:
+            st.markdown(f"""
+            <div class="demo-card priority-card">
+                <div style="font-size: 24px; margin-bottom: 10px;">{priority['Icon']}</div>
+                <h3 style="margin: 0; color: #E74C3C; font-size: 28px;">{priority['Rate']:.0%}</h3>
+                <p style="margin: 8px 0; font-weight: bold; color: #2c3e50;">{priority['Group']}</p>
+                <small style="color: #7f8c8d;">{priority['Region']}</small>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
     
     # Income Group Analysis
-    st.markdown("---")
-    st.markdown("### 💰 Income Group Performance")
-        
+    st.markdown("### 🎯 Income Group Analysis")
+    
     fig_income = px.bar(
         income_df,
         x='income_group',
@@ -636,17 +807,17 @@ if st.session_state.page == 'home':
         color='inclusion_rate',
         color_continuous_scale='Viridis',
         text='inclusion_rate',
-        title="Financial Inclusion by Income Level"
+        title="<b>Financial Inclusion by Income Level</b>",
+        height=400
     )
-        
+    
     fig_income.update_traces(
         texttemplate='%{text:.1%}',
         textposition='outside',
         textfont=dict(size=14, color='black', family='Arial Black')
     )
-        
+    
     fig_income.update_layout(
-        height=400,
         showlegend=False,
         xaxis_title="Income Group",
         yaxis_title="Inclusion Rate",
@@ -656,75 +827,9 @@ if st.session_state.page == 'home':
         font=dict(size=12), 
         title_font=dict(size=16)
     )
-        
+    
     st.plotly_chart(fig_income, use_container_width=True)
-    
-    # Strategic Recommendations Section
-    st.markdown("---")
-    st.markdown("## 🎯 Strategic Recommendations by Priority")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        <div class="recommendation-box">
-            <h4>🚨 Immediate Action Required</h4>
-            <p><strong>MENA Region:</strong></p>
-            <ul>
-                <li>Launch women-focused banking programs</li>
-                <li>Address youth financial exclusion (26.7% inclusion)</li>
-                <li>Mobile-first approach for rural areas</li>
-            </ul>
-            <p><strong>Sub-Saharan Africa:</strong></p>
-            <ul>
-                <li>Expand mobile money infrastructure</li>
-                <li>Agent banking in rural communities</li>
-                <li>Youth entrepreneurship finance programs</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="recommendation-box">
-            <h4>📈 Scale Successful Models</h4>
-            <p><strong>East Asia Pacific:</strong></p>
-            <ul>
-                <li>Replicate gender parity success globally</li>
-                <li>Export digital payment innovations</li>
-                <li>Share rural inclusion strategies</li>
-            </ul>
-            <p><strong>High Income Countries:</strong></p>
-            <ul>
-                <li>Focus on elderly digital adoption</li>
-                <li>Sustainable finance products</li>
-                <li>Fintech regulatory frameworks</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div class="recommendation-box">
-            <h4>💡 Innovation Opportunities</h4>
-            <p><strong>Cross-Regional:</strong></p>
-            <ul>
-                <li>AI-driven credit scoring for unbanked</li>
-                <li>Blockchain for remittances</li>
-                <li>Digital identity systems</li>
-            </ul>
-            <p><strong>Priority Demographics:</strong></p>
-            <ul>
-                <li>Youth-specific digital products</li>
-                <li>Women entrepreneur finance</li>
-                <li>Rural agent banking networks</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        
-        
-        
+
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
     st.markdown("## 🗺️ Interactive Regional Analytics")
@@ -769,15 +874,14 @@ elif st.session_state.page == 'regional':
                       'Sample Size: %{customdata[1]:,}<br>' +
                       '<extra></extra>',
         customdata=country_df[['region', 'sample_size']].values,
-       colorbar=dict(
-        title=dict(
-        text="Financial<br>Inclusion Rate",
-        font=dict(size=14)
+        colorbar=dict(
+            title=dict(
+                text="Financial<br>Inclusion Rate",
+                font=dict(size=14)
+            ),
+            tickformat='.0%',
+            len=0.8
         ),
-        tickformat='.0%',
-        len=0.8
-    ),
-
         showscale=True
     ))
 
@@ -821,25 +925,11 @@ elif st.session_state.page == 'regional':
         
         col = cols[idx % 2]
         with col:
-            # Create custom button styling based on region color
-            button_style = f"""
-            <div style="margin: 10px 0;">
-                <button onclick="this.style.transform='scale(0.95)'" 
-                        style="width: 100%; padding: 15px; border: none; border-radius: 12px;
-                               background: linear-gradient(135deg, {region_color} 0%, {region_color}CC 100%);
-                               color: white; font-weight: bold; font-size: 16px;
-                               box-shadow: 0 4px 15px {region_color}40;
-                               transition: all 0.2s ease; cursor: pointer;">
-                    {region_name.split('(')[0].strip()} - {inclusion_rate:.1%}
-                </button>
-            </div>
-            """
-            
             if st.button(f"{region_name.split('(')[0].strip()} - {inclusion_rate:.1%}", 
                         key=f"region_{idx}"):
                 st.session_state.selected_region = region_name
     
-    # Display selected region details
+    # Display selected region details with enhanced recommendations
     if st.session_state.selected_region:
         region_name = st.session_state.selected_region
         region_data = regional_df[regional_df['region'] == region_name].iloc[0]
@@ -848,7 +938,7 @@ elif st.session_state.page == 'regional':
         st.markdown(f"""
         <div class="region-info-card" style="border-left-color: {region_info['color']};">
             <h2 style="color: {region_info['color']}; margin-top: 0;">
-                {region_name.split('(')[0].strip()} - Detailed Analysis
+                {region_name.split('(')[0].strip()} - Strategic Analysis
             </h2>
         </div>
         """, unsafe_allow_html=True)
@@ -867,32 +957,81 @@ elif st.session_state.page == 'regional':
             rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
             st.metric("Global Rank", f"#{rank}/7")
         
-        # Detailed insights
+        # Strategic Recommendations Section
+        st.markdown(f"""
+        <div class="recommendation-section" style="border-left-color: {region_info['color']};">
+            <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Strategic Recommendations by Priority</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Action Timeline
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### 🚀 Immediate Actions (0-12 months)")
+            for action in region_info['immediate_actions']:
+                st.markdown(f"""
+                <div class="action-card immediate">
+                    <h5 style="margin: 0 0 10px 0; color: #E74C3C;">⚡ Priority Action</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("#### 🔄 Medium-term (1-3 years)")
+            for action in region_info['medium_term']:
+                st.markdown(f"""
+                <div class="action-card medium-term">
+                    <h5 style="margin: 0 0 10px 0; color: #F39C12;">🔧 Strategic Initiative</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("#### 🌟 Long-term Vision (3-10 years)")
+            for action in region_info['long_term']:
+                st.markdown(f"""
+                <div class="action-card long-term">
+                    <h5 style="margin: 0 0 10px 0; color: #27AE60;">🎯 Transformation Goal</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # KPIs and Budget Allocation
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("#### 🎯 Key Challenges")
-            for challenge in region_info['key_challenges']:
-                st.markdown(f"• {challenge}")
-            
-            st.markdown("#### 🚀 Growth Opportunities")
-            for opportunity in region_info['opportunities']:
-                st.markdown(f"• {opportunity}")
-        
-        with col2:
-            st.markdown("#### 📍 Major Countries")
-            for country in region_info['countries']:
-                st.markdown(f"• {country}")
-            
             st.markdown(f"""
-            <div class="recommendation-box">
-                <h4 style="margin-top: 0;">💡 Priority Recommendations</h4>
-                <ul style="margin: 10px 0;">
-                    {''.join(f'<li>{action}</li>' for action in region_info['priority_actions'])}
+            <div class="kpi-section">
+                <h4 style="margin-top: 0;">📊 Success Metrics & KPIs</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    {''.join(f'<li style="margin: 5px 0;">{metric}</li>' for metric in region_info['success_metrics'])}
                 </ul>
             </div>
             """, unsafe_allow_html=True)
-
+        
+        with col2:
+            st.markdown(f"""
+            <div class="kpi-section">
+                <h4 style="margin-top: 0;">💰 Recommended Budget Allocation</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    {''.join(f'<li style="margin: 5px 0;"><strong>{area}:</strong> {percentage}</li>' for area, percentage in region_info['budget_allocation'].items())}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Challenges and Opportunities
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🚧 Key Challenges")
+            for challenge in region_info['key_challenges']:
+                st.markdown(f"• {challenge}")
+        
+        with col2:
+            st.markdown("#### 🚀 Growth Opportunities")
+            for opportunity in region_info['opportunities']:
+                st.markdown(f"• {opportunity}")
 
 # Individual Analysis Mode
 elif st.session_state.page == 'individual':
@@ -923,7 +1062,7 @@ elif st.session_state.page == 'individual':
         col1, col2 = st.columns(2)
         
         with col1:
-            # Most important features for prediction (updated with your actual features)
+            # Most important features for prediction
             biz_loan = st.slider("🏢 Business Loan Access (0-1)", 0.0, 1.0, 0.3, 0.1,
                                help="Do you have access to business loans?")
             emergency_funds = st.slider("🆘 Emergency Funds (0-1)", 0.0, 1.0, 0.4, 0.1,
@@ -942,7 +1081,7 @@ elif st.session_state.page == 'individual':
         submitted = st.form_submit_button("🔮 Predict My Financial Inclusion Score")
     
     if submitted:
-        # Updated prediction logic using your actual Random Forest feature importance
+        # Prediction logic using Random Forest feature importance
         weights = {
             'biz_loan': 0.1683,
             'emergency_funds': 0.0980,
@@ -952,7 +1091,7 @@ elif st.session_state.page == 'individual':
             'financial_activity': 0.0390
         }
         
-        # Regional baseline (from your actual data)
+        # Regional baseline
         region_baseline = {
             'High income': 0.858,
             'East Asia & Pacific (excluding high income)': 0.568,
@@ -971,7 +1110,7 @@ elif st.session_state.page == 'individual':
             'Low income': -0.05
         }
         
-        # Calculate prediction using your model's feature weights
+        # Calculate prediction
         feature_score = (
             biz_loan * weights['biz_loan'] +
             emergency_funds * weights['emergency_funds'] +
@@ -1025,7 +1164,7 @@ elif st.session_state.page == 'individual':
             """, unsafe_allow_html=True)
         
         with col3:
-            confidence = 0.85 + (abs(final_score - 0.5) * 0.3)  # Higher confidence for extreme scores
+            confidence = 0.85 + (abs(final_score - 0.5) * 0.3)
             st.markdown(f"""
             <div class="metric-card">
                 <h3>🎯 Prediction Confidence</h3>
@@ -1035,7 +1174,7 @@ elif st.session_state.page == 'individual':
             </div>
             """, unsafe_allow_html=True)
         
-        # Feature Impact Analysis with updated features
+        # Feature Impact Analysis
         st.markdown("### 📊 What's Driving Your Score?")
         
         feature_impacts = {
@@ -1088,48 +1227,8 @@ elif st.session_state.page == 'individual':
         if final_score < region_baseline[region]:
             recommendations.append(f"🎯 **Regional Programs**: Look into financial inclusion initiatives specific to {region}")
         
-        # Priority recommendations based on lowest scores
-        low_factors = [(k, v) for k, v in {
-            'Business Loans': biz_loan,
-            'Emergency Funds': emergency_funds, 
-            'Digital Engagement': digital_engagement,
-            'Financial Activity': financial_activity,
-            'Government Services': govt_services
-        }.items() if v < 0.4]
-        
-        if low_factors:
-            st.markdown(f"#### 🚀 **Priority Actions** (Focus on these first):")
-            for factor, score in sorted(low_factors, key=lambda x: x[1]):
-                st.markdown(f"- **{factor}**: Current level {score:.1%} - High impact opportunity")
-        
-        for rec in recommendations[:4]:  # Show top 4 recommendations
+        for rec in recommendations[:4]:
             st.markdown(f"- {rec}")
-        
-        # Success Stories
-        if final_score >= 0.7:
-            st.markdown("""
-            <div class="insight-box">
-                <h4>🌟 Congratulations!</h4>
-                <p>You're doing great with financial inclusion! Your score indicates good access to financial services. 
-                Consider sharing your experience with others in your community.</p>
-            </div>
-            """, unsafe_allow_html=True)
-        elif final_score >= 0.5:
-            st.markdown("""
-            <div class="insight-box">
-                <h4>🎯 You're on the right track!</h4>
-                <p>With some focused improvements in key areas, you can significantly enhance your financial inclusion. 
-                The recommendations above will help you get there.</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div class="insight-box">
-                <h4>💪 Every journey starts with a single step!</h4>
-                <p>There are many opportunities to improve your financial inclusion. Start with one small change 
-                and build momentum. Financial inclusion programs in your region can provide additional support.</p>
-            </div>
-            """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
