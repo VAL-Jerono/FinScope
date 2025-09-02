@@ -421,267 +421,310 @@ if st.session_state.page == 'home':
     st.plotly_chart(fig_overview, use_container_width=True)
     
     
-# Enhanced Visualizations
+# Enhanced Visualizations Section
+    st.markdown("---")
+    st.markdown("## 📊 Strategic Target Group Analysis")
+    st.markdown("*Data-driven insights for policy makers and financial inclusion practitioners*")
     
-    st.markdown("### 🎯 Income Group Analysis")
-        
-    fig_income = px.bar(
-            income_df,
-            x='income_group',
-            y='inclusion_rate',
-            color='inclusion_rate',
-            color_continuous_scale='Viridis',
-            text='inclusion_rate',
-            title="Inclusion Rate by Income Level"
-        )
-        
-    fig_income.update_traces(
-            texttemplate='%{text:.1%}',
-            textposition='outside',
-            textfont=dict(size=14, color='black', family='Arial Black')
-        )
-        
-    fig_income.update_layout(
-            height=400,
-            showlegend=False,
-            xaxis_title="Income Group",
-            yaxis_title="Inclusion Rate",
-            yaxis=dict(tickformat='.0%'),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=12), 
-            title_font=dict(size=18)
-        )
-        
-    st.plotly_chart(fig_income, use_container_width=True)
-    
-    # Demographic Analysis Section
-    st.markdown("### 👥 Demographic Inclusion Analysis")
-    st.markdown("*Understanding which groups are champions vs those needing targeted support*")
-    
-    # Create demographic data based on your actual feature structure
-    demographic_champions = {
-        'demographic': [
-            'High Income + Digital Native',
-            'Upper Middle + High Financial Activity', 
-            'Credit Card Holders',
-            'Business Loan Access',
-            'Emergency Fund + Digital Engagement',
-            'Government Services Users'
-        ],
-        'inclusion_rate': [0.92, 0.87, 0.85, 0.83, 0.81, 0.78],
-        'sample_size': [450, 620, 890, 340, 750, 520],
-        'category': ['Champion'] * 6
-    }
-    
-    demographic_priority = {
-        'demographic': [
-            'Low Income + No Digital Access',
-            'No Emergency Funds + Rural',
-            'No Business Loan Access',
-            'Low Financial Activity Score',
-            'No Govt Services + Low Income',
-            'No Credit + No Savings'
-        ],
-        'inclusion_rate': [0.18, 0.23, 0.28, 0.31, 0.35, 0.39],
-        'sample_size': [680, 920, 1240, 850, 760, 540],
-        'category': ['Priority Target'] * 6
-    }
-    
-    # Combine data
-    all_demo_data = {
-        'demographic': demographic_champions['demographic'] + demographic_priority['demographic'],
-        'inclusion_rate': demographic_champions['inclusion_rate'] + demographic_priority['inclusion_rate'],
-        'sample_size': demographic_champions['sample_size'] + demographic_priority['sample_size'],
-        'category': demographic_champions['category'] + demographic_priority['category']
-    }
-    
-    demo_df = pd.DataFrame(all_demo_data)
-    
-    # Create side-by-side comparison
     col1, col2 = st.columns(2)
     
     with col1:
-        champions_df = demo_df[demo_df['category'] == 'Champion'].sort_values('inclusion_rate', ascending=True)
+        st.markdown("### 🏆 Financial Inclusion Champions")
+        st.markdown("*Demographic groups with highest inclusion rates across regions*")
+        
+        # Champions data from your analysis
+        champions_data = {
+            'Demographic': ['Urban Dwellers', 'Higher Education', 'In Labor Force', 'Richest 60%', 'Men', 'Rural Areas'],
+            'High Income': [0.891, 0.897, 0.930, 0.903, 0.888, 0.879],
+            'East Asia Pacific': [0.766, 0.677, 0.597, 0.637, 0.576, 0.670],
+            'Europe Central Asia': [0.769, 0.638, 0.704, 0.626, 0.596, 0.707],
+            'Latin America': [0.642, 0.564, 0.569, 0.559, 0.527, 0.556],
+            'Sub-Saharan Africa': [0.645, 0.570, 0.500, 0.497, 0.468, 0.516],
+            'South Asia': [0.607, 0.597, 0.560, 0.537, 0.533, 0.596],
+            'MENA': [0.491, 0.425, 0.540, 0.448, 0.476, 0.392]
+        }
+        
+        champions_df = pd.DataFrame(champions_data)
+        champions_melted = champions_df.melt(id_vars='Demographic', var_name='Region', value_name='Inclusion_Rate')
         
         fig_champions = px.bar(
-            champions_df,
-            x='inclusion_rate',
-            y='demographic',
+            champions_melted,
+            x='Inclusion_Rate',
+            y='Demographic',
+            color='Region',
             orientation='h',
-            color='inclusion_rate',
-            color_continuous_scale='Greens',
-            text='inclusion_rate',
-            title="🏆 Financial Inclusion Champions",
-            height=400
-        )
-        
-        fig_champions.update_traces(
-            texttemplate='%{text:.0%}',
-            textposition='outside',
-            textfont=dict(size=11, color='black', family='Arial Black')
+            title="Champion Groups by Region",
+            color_discrete_map={
+                'High Income': '#2E8B57',
+                'East Asia Pacific': '#FF6B35',
+                'Europe Central Asia': '#F7931E',
+                'Latin America': '#E74C3C',
+                'Sub-Saharan Africa': '#C0392B',
+                'South Asia': '#FFD23F',
+                'MENA': '#8E44AD'
+            }
         )
         
         fig_champions.update_layout(
-            showlegend=False,
-            xaxis_title="Inclusion Rate",
+            height=450,
+            xaxis_title="Financial Inclusion Rate",
             yaxis_title="",
-            xaxis=dict(tickformat='.0%', range=[0, 1]),
+            xaxis=dict(tickformat='.0%'),
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=10),
-            title_font=dict(size=14)
+            font=dict(size=11),
+            title_font=dict(size=14),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         
         st.plotly_chart(fig_champions, use_container_width=True)
     
     with col2:
-        priority_df = demo_df[demo_df['category'] == 'Priority Target'].sort_values('inclusion_rate', ascending=True)
+        st.markdown("### 🎯 Priority Target Groups")
+        st.markdown("*Demographic groups requiring urgent attention and intervention*")
         
-        fig_priority = px.bar(
-            priority_df,
-            x='inclusion_rate',
-            y='demographic',
+        # Excluded groups data from your analysis
+        excluded_data = {
+            'Demographic': ['Primary Education', 'Out of Labor Force', 'Poorest 40%', 'Ages 15-24', 'Women', 'All Population'],
+            'High Income': [0.769, 0.804, 0.834, 0.781, 0.855, 0.882],
+            'East Asia Pacific': [0.457, 0.489, 0.484, 0.543, 0.576, 0.564],
+            'Europe Central Asia': [0.390, 0.448, 0.484, 0.428, 0.540, 0.557],
+            'Latin America': [0.368, 0.386, 0.381, 0.403, 0.454, 0.496],
+            'Sub-Saharan Africa': [0.337, 0.330, 0.333, 0.361, 0.383, 0.394],
+            'South Asia': [0.419, 0.432, 0.401, 0.431, 0.435, 0.440],
+            'MENA': [0.330, 0.295, 0.304, 0.267, 0.300, 0.378]
+        }
+        
+        excluded_df = pd.DataFrame(excluded_data)
+        excluded_melted = excluded_df.melt(id_vars='Demographic', var_name='Region', value_name='Inclusion_Rate')
+        
+        fig_excluded = px.bar(
+            excluded_melted,
+            x='Inclusion_Rate',
+            y='Demographic',
+            color='Region',
             orientation='h',
-            color='inclusion_rate',
-            color_continuous_scale='Reds',
-            text='inclusion_rate',
-            title="🎯 Priority Target Groups",
-            height=400
+            title="Priority Target Groups by Region",
+            color_discrete_map={
+                'High Income': '#2E8B57',
+                'East Asia Pacific': '#FF6B35',
+                'Europe Central Asia': '#F7931E',
+                'Latin America': '#E74C3C',
+                'Sub-Saharan Africa': '#C0392B',
+                'South Asia': '#FFD23F',
+                'MENA': '#8E44AD'
+            }
         )
         
-        fig_priority.update_traces(
-            texttemplate='%{text:.0%}',
-            textposition='outside',
-            textfont=dict(size=11, color='black', family='Arial Black')
-        )
-        
-        fig_priority.update_layout(
-            showlegend=False,
-            xaxis_title="Inclusion Rate",
+        fig_excluded.update_layout(
+            height=450,
+            xaxis_title="Financial Inclusion Rate",
             yaxis_title="",
-            xaxis=dict(tickformat='.0%', range=[0, 1]),
+            xaxis=dict(tickformat='.0%'),
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=10),
-            title_font=dict(size=14)
+            font=dict(size=11),
+            title_font=dict(size=14),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         
-        st.plotly_chart(fig_priority, use_container_width=True)
+        st.plotly_chart(fig_excluded, use_container_width=True)
     
     # Gender Gap Analysis
-    st.markdown("### 👫 Gender Gap Analysis by Region")
-    st.markdown("*Showing the financial inclusion disparity between men and women across regions*")
+    st.markdown("---")
+    st.markdown("### 👥 Gender Gap Analysis Across Regions")
+    st.markdown("*Critical insights on gender disparities in financial inclusion*")
     
-    # Gender gap data based on your regional structure
+    # Gender gap data from your analysis
     gender_gap_data = {
-        'region': [
-            'High income',
-            'East Asia & Pacific (excl. high income)',
-            'Europe & Central Asia (excl. high income)',
-            'Latin America & Caribbean (excl. high income)',
-            'South Asia (excl. high income)',
-            'Sub-Saharan Africa (excl. high income)',
-            'Middle East & North Africa (excl. high income)'
+        'Region': [
+            'MENA', 'South Asia', 'Sub-Saharan Africa', 'Latin America', 
+            'Europe Central Asia', 'High Income', 'East Asia Pacific'
         ],
-        'men_rate': [0.87, 0.61, 0.58, 0.52, 0.58, 0.48, 0.49],
-        'women_rate': [0.85, 0.52, 0.51, 0.44, 0.35, 0.38, 0.28],
-        'gap': [0.02, 0.09, 0.07, 0.08, 0.23, 0.10, 0.21],
-        'sample_men': [1450, 265, 580, 490, 190, 920, 285],
-        'sample_women': [1488, 256, 559, 480, 162, 913, 273]
+        'Men': [0.476, 0.533, 0.468, 0.527, 0.596, 0.888, 0.576],
+        'Women': [0.300, 0.435, 0.383, 0.454, 0.540, 0.855, 0.576],
+        'Gap': [0.176, 0.099, 0.084, 0.073, 0.056, 0.033, 0.001]
     }
     
     gender_df = pd.DataFrame(gender_gap_data)
-    gender_df = gender_df.sort_values('gap', ascending=False)
+    gender_df = gender_df.sort_values('Gap', ascending=False)
     
-    fig_gender = go.Figure()
+    col1, col2 = st.columns([2, 1])
     
-    # Men bars
-    fig_gender.add_trace(go.Bar(
-        name='Men',
-        y=gender_df['region'],
-        x=gender_df['men_rate'],
-        orientation='h',
-        marker_color='#1f77b4',
-        opacity=0.8,
-        text=[f"{rate:.0%}" for rate in gender_df['men_rate']],
-        textposition='outside'
-    ))
-    
-    # Women bars  
-    fig_gender.add_trace(go.Bar(
-        name='Women',
-        y=gender_df['region'],
-        x=gender_df['women_rate'],
-        orientation='h',
-        marker_color='#ff7f0e',
-        opacity=0.8,
-        text=[f"{rate:.0%}" for rate in gender_df['women_rate']],
-        textposition='outside'
-    ))
-    
-    # Add gap annotations
-    for i, (gap, region) in enumerate(zip(gender_df['gap'], gender_df['region'])):
-        max_rate = max(gender_df['men_rate'].iloc[i], gender_df['women_rate'].iloc[i])
-        fig_gender.add_annotation(
-            x=max_rate + 0.05,
-            y=i,
-            text=f"Gap: {gap:.0%}",
-            showarrow=False,
-            font=dict(size=10, color='red' if gap > 0.15 else 'black'),
-            xanchor='left'
+    with col1:
+        # Side-by-side gender comparison
+        fig_gender = go.Figure()
+        
+        # Men bars
+        fig_gender.add_trace(go.Bar(
+            name='Men',
+            x=gender_df['Region'],
+            y=gender_df['Men'],
+            marker_color='#2E86AB',
+            text=[f"{val:.1%}" for val in gender_df['Men']],
+            textposition='outside'
+        ))
+        
+        # Women bars
+        fig_gender.add_trace(go.Bar(
+            name='Women',
+            x=gender_df['Region'],
+            y=gender_df['Women'],
+            marker_color='#F24236',
+            text=[f"{val:.1%}" for val in gender_df['Women']],
+            textposition='outside'
+        ))
+        
+        # Add gap annotations
+        for i, (region, gap) in enumerate(zip(gender_df['Region'], gender_df['Gap'])):
+            max_val = max(gender_df['Men'].iloc[i], gender_df['Women'].iloc[i])
+            fig_gender.add_annotation(
+                x=i,
+                y=max_val + 0.05,
+                text=f"Gap: {gap:.1%}",
+                showarrow=False,
+                font=dict(size=12, color='black', family='Arial Black'),
+                bgcolor="rgba(255,255,255,0.8)",
+                bordercolor="black",
+                borderwidth=1
+            )
+        
+        fig_gender.update_layout(
+            title="Gender Inclusion Rates and Gaps by Region",
+            xaxis_title="Region",
+            yaxis_title="Financial Inclusion Rate",
+            yaxis=dict(tickformat='.0%', range=[0, 1]),
+            barmode='group',
+            height=450,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
+            title_font=dict(size=14),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
+        
+        st.plotly_chart(fig_gender, use_container_width=True)
     
-    fig_gender.update_layout(
-        title="Gender Gap in Financial Inclusion by Region",
-        xaxis_title="Financial Inclusion Rate",
-        yaxis_title="",
-        xaxis=dict(tickformat='.0%'),
-        height=500,
-        barmode='group',
+    with col2:
+        st.markdown("#### 🚨 Gender Gap Severity")
+        
+        # Create gap severity indicators
+        for _, row in gender_df.iterrows():
+            gap_severity = "🔴 Critical" if row['Gap'] > 0.15 else "🟡 Moderate" if row['Gap'] > 0.05 else "🟢 Low"
+            st.markdown(f"""
+            **{row['Region'][:20]}**  
+            Gap: **{row['Gap']:.1%}** {gap_severity}
+            """)
+        
+        st.markdown("---")
+        st.markdown("#### 💡 Key Insights")
+        st.markdown("""
+        • **MENA** has the largest gender gap (17.6pp)
+        • **East Asia Pacific** achieves gender parity (0.1pp)
+        • **High income** regions show smallest absolute gaps
+        • **South Asia** needs targeted women's programs
+        """)
+    
+    # Income Group Analysis
+    st.markdown("---")
+    st.markdown("### 💰 Income Group Performance")
+        
+    fig_income = px.bar(
+        income_df,
+        x='income_group',
+        y='inclusion_rate',
+        color='inclusion_rate',
+        color_continuous_scale='Viridis',
+        text='inclusion_rate',
+        title="Financial Inclusion by Income Level"
+    )
+        
+    fig_income.update_traces(
+        texttemplate='%{text:.1%}',
+        textposition='outside',
+        textfont=dict(size=14, color='black', family='Arial Black')
+    )
+        
+    fig_income.update_layout(
+        height=400,
+        showlegend=False,
+        xaxis_title="Income Group",
+        yaxis_title="Inclusion Rate",
+        yaxis=dict(tickformat='.0%'),
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(size=12),
-        title_font=dict(size=16),
-        legend=dict(x=0.7, y=0.02)
+        font=dict(size=12), 
+        title_font=dict(size=16)
     )
+        
+    st.plotly_chart(fig_income, use_container_width=True)
     
-    st.plotly_chart(fig_gender, use_container_width=True)
-    
-    # Key Insights
-    st.markdown("### 💡 Key Demographic Insights")
+    # Strategic Recommendations Section
+    st.markdown("---")
+    st.markdown("## 🎯 Strategic Recommendations by Priority")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("""
-        <div class="metric-card">
-            <h4 style="color: #2E8B57; margin-top: 0;">🏆 Top Performers</h4>
-            <p><strong>Digital + High Income:</strong> 92% inclusion</p>
-            <p><strong>Credit Card Access:</strong> 85% inclusion</p>
-            <p><strong>Business Loans:</strong> 83% inclusion</p>
+        <div class="recommendation-box">
+            <h4>🚨 Immediate Action Required</h4>
+            <p><strong>MENA Region:</strong></p>
+            <ul>
+                <li>Launch women-focused banking programs</li>
+                <li>Address youth financial exclusion (26.7% inclusion)</li>
+                <li>Mobile-first approach for rural areas</li>
+            </ul>
+            <p><strong>Sub-Saharan Africa:</strong></p>
+            <ul>
+                <li>Expand mobile money infrastructure</li>
+                <li>Agent banking in rural communities</li>
+                <li>Youth entrepreneurship finance programs</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        <div class="metric-card">
-            <h4 style="color: #C0392B; margin-top: 0;">🎯 Priority Groups</h4>
-            <p><strong>Low Income + No Digital:</strong> 18% inclusion</p>
-            <p><strong>No Emergency Funds:</strong> 23% inclusion</p>
-            <p><strong>Rural + Limited Access:</strong> 28% inclusion</p>
+        <div class="recommendation-box">
+            <h4>📈 Scale Successful Models</h4>
+            <p><strong>East Asia Pacific:</strong></p>
+            <ul>
+                <li>Replicate gender parity success globally</li>
+                <li>Export digital payment innovations</li>
+                <li>Share rural inclusion strategies</li>
+            </ul>
+            <p><strong>High Income Countries:</strong></p>
+            <ul>
+                <li>Focus on elderly digital adoption</li>
+                <li>Sustainable finance products</li>
+                <li>Fintech regulatory frameworks</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown("""
-        <div class="metric-card">
-            <h4 style="color: #8E44AD; margin-top: 0;">👫 Gender Gaps</h4>
-            <p><strong>Largest Gap:</strong> South Asia (23%)</p>
-            <p><strong>MENA Region:</strong> 21% gap</p>
-            <p><strong>Smallest Gap:</strong> High Income (2%)</p>
+        <div class="recommendation-box">
+            <h4>💡 Innovation Opportunities</h4>
+            <p><strong>Cross-Regional:</strong></p>
+            <ul>
+                <li>AI-driven credit scoring for unbanked</li>
+                <li>Blockchain for remittances</li>
+                <li>Digital identity systems</li>
+            </ul>
+            <p><strong>Priority Demographics:</strong></p>
+            <ul>
+                <li>Youth-specific digital products</li>
+                <li>Women entrepreneur finance</li>
+                <li>Rural agent banking networks</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
+        
+        
+        
+        
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
     st.markdown("## 🗺️ Interactive Regional Analytics")
