@@ -823,7 +823,125 @@ if st.session_state.page == 'home':
     
     st.plotly_chart(fig_overview, use_container_width=True)
     
-    
+    # Enhanced Demographic Analysis with Regional Range Comparison
+    st.markdown("### 🌍 Global Financial Inclusion: Demographic Range Analysis")
+    st.markdown("*Complete range across all regions for each demographic group*")
+
+    # Prepare data for range chart
+    demographic_groups = []
+    min_values = []
+    max_values = []
+    ranges = []
+    best_regions = []
+    worst_regions = []
+
+    for demo_group, regions in regional_demographic_data.items():
+        values = list(regions.values())
+        region_names = list(regions.keys())
+        
+        min_val = min(values)
+        max_val = max(values)
+        
+        demographic_groups.append(demo_group)
+        min_values.append(min_val)
+        max_values.append(max_val)
+        ranges.append(max_val - min_val)
+        
+        best_regions.append(region_names[values.index(max_val)])
+        worst_regions.append(region_names[values.index(min_val)])
+
+    # Create range chart
+    fig_range = go.Figure()
+
+    # Sort by range size (largest disparities first)
+    sorted_indices = sorted(range(len(ranges)), key=lambda i: ranges[i], reverse=True)
+
+    y_labels_sorted = [demographic_groups[i] for i in sorted_indices]
+    min_vals_sorted = [min_values[i] for i in sorted_indices]
+    max_vals_sorted = [max_values[i] for i in sorted_indices]
+    ranges_sorted = [ranges[i] for i in sorted_indices]
+    best_regions_sorted = [best_regions[i] for i in sorted_indices]
+    worst_regions_sorted = [worst_regions[i] for i in sorted_indices]
+
+    # Add range bars (from min to max)
+    for i in range(len(y_labels_sorted)):
+        # Background range bar
+        fig_range.add_trace(go.Bar(
+            name='Regional Range' if i == 0 else '',
+            y=[y_labels_sorted[i]],
+            x=[max_vals_sorted[i] - min_vals_sorted[i]],
+            base=[min_vals_sorted[i]],
+            orientation='h',
+            marker=dict(color='lightgray', opacity=0.5),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>{y_labels_sorted[i]}</b><br>Range: {ranges_sorted[i]:.0%}<br>Best: {best_regions_sorted[i]} ({max_vals_sorted[i]:.0%})<br>Worst: {worst_regions_sorted[i]} ({min_vals_sorted[i]:.0%})<extra></extra>"
+        ))
+        
+        # Min value marker
+        fig_range.add_trace(go.Scatter(
+            name='Lowest Rate' if i == 0 else '',
+            x=[min_vals_sorted[i]],
+            y=[y_labels_sorted[i]],
+            mode='markers',
+            marker=dict(color='#E74C3C', size=12, symbol='circle'),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>Lowest:</b> {worst_regions_sorted[i]}<br>Rate: {min_vals_sorted[i]:.0%}<extra></extra>"
+        ))
+        
+        # Max value marker
+        fig_range.add_trace(go.Scatter(
+            name='Highest Rate' if i == 0 else '',
+            x=[max_vals_sorted[i]],
+            y=[y_labels_sorted[i]],
+            mode='markers',
+            marker=dict(color='#27AE60', size=12, symbol='circle'),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>Highest:</b> {best_regions_sorted[i]}<br>Rate: {max_vals_sorted[i]:.0%}<extra></extra>"
+        ))
+
+    # Add range annotations
+    for i in range(len(y_labels_sorted)):
+        fig_range.add_annotation(
+            x=(min_vals_sorted[i] + max_vals_sorted[i]) / 2,
+            y=i,
+            text=f"{ranges_sorted[i]:.0%}",
+            showarrow=False,
+            font=dict(color='black', size=11, family='Arial Black'),
+            bgcolor='white',
+            bordercolor='gray',
+            borderwidth=1
+        )
+
+    fig_range.update_layout(
+        title=dict(
+            text="<b>Global Financial Inclusion Disparities</b><br><span style='font-size:14px; color:#666'>Regional range for each demographic group (sorted by disparity size)</span>",
+            x=0.5,
+            font=dict(size=18)
+        ),
+        xaxis=dict(
+            title="Account Ownership Rate",
+            tickformat='.0%',
+            range=[0, 1.0],
+            gridcolor='lightgray',
+            gridwidth=1
+        ),
+        yaxis=dict(title="Demographic Groups"),
+        height=700,
+        font=dict(family="Arial, sans-serif", size=11),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        margin=dict(l=150, r=50, t=100, b=50)
+    )
+
+    st.plotly_chart(fig_range, use_container_width=True)
+
     # Regional performance heatmap
     st.markdown("### 🔥 Regional Performance Heatmap")
     st.markdown("*Color-coded performance across all demographic groups by region*")
