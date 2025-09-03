@@ -1486,109 +1486,109 @@ elif st.session_state.page == 'regional':
                 st.markdown(f"• {opportunity}")
     
     
-    # # Display selected region details with enhanced recommendations
-    # if st.session_state.selected_region:
-    #     region_name = st.session_state.selected_region
-    #     region_data = regional_df[regional_df['region'] == region_name].iloc[0]
-    #     region_info = region_mapping[region_name]
+    # Display selected region details with enhanced recommendations
+    if st.session_state.selected_region:
+        region_name = st.session_state.selected_region
+        region_data = regional_df[regional_df['region'] == region_name].iloc[0]
+        region_info = region_mapping[region_name]
         
-    #     st.markdown(f"""
-    #     <div class="region-info-card" style="border-left-color: {region_info['color']};">
-    #         <h2 style="color: {region_info['color']}; margin-top: 0;">
-    #             {region_name.split('(')[0].strip()} - Strategic Analysis
-    #         </h2>
-    #     </div>
-    #     """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="region-info-card" style="border-left-color: {region_info['color']};">
+            <h2 style="color: {region_info['color']}; margin-top: 0;">
+                {region_name.split('(')[0].strip()} - Strategic Analysis
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
         
-    #     # Key metrics
-    #     col1, col2, col3, col4 = st.columns(4)
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
         
-    #     with col1:
-    #         st.metric("Inclusion Rate", f"{region_data['inclusion_rate']:.1%}")
-    #     with col2:
-    #         st.metric("Sample Size", f"{region_data['count']:,}")
-    #     with col3:
-    #         gap_to_best = regional_df['inclusion_rate'].max() - region_data['inclusion_rate']
-    #         st.metric("Gap to Best", f"{gap_to_best:.1%}")
-    #     with col4:
-    #         rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
-    #         st.metric("Global Rank", f"#{rank}/7")
+        with col1:
+            st.metric("Inclusion Rate", f"{region_data['inclusion_rate']:.1%}")
+        with col2:
+            st.metric("Sample Size", f"{region_data['count']:,}")
+        with col3:
+            gap_to_best = regional_df['inclusion_rate'].max() - region_data['inclusion_rate']
+            st.metric("Gap to Best", f"{gap_to_best:.1%}")
+        with col4:
+            rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
+            st.metric("Global Rank", f"#{rank}/7")
         
-    #     # Strategic Recommendations Section
-    #     st.markdown(f"""
-    #     <div class="recommendation-section" style="border-left-color: {region_info['color']};">
-    #         <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Strategic Recommendations by Priority</h3>
-    #     </div>
-    #     """, unsafe_allow_html=True)
+        # Strategic Recommendations Section
+        st.markdown(f"""
+        <div class="recommendation-section" style="border-left-color: {region_info['color']};">
+            <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Strategic Recommendations by Priority</h3>
+        </div>
+        """, unsafe_allow_html=True)
         
-    #     # Action Timeline
-    #     col1, col2, col3 = st.columns(3)
+        # Action Timeline
+        col1, col2, col3 = st.columns(3)
         
-    #     with col1:
-    #         st.markdown("#### 🚀 Immediate Actions (0-12 months)")
-    #         for action in region_info['immediate_actions']:
-    #             st.markdown(f"""
-    #             <div class="action-card immediate">
-    #                 <h5 style="margin: 0 0 10px 0; color: #E74C3C;">⚡ Priority Action</h5>
-    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
-    #             </div>
-    #             """, unsafe_allow_html=True)
+        with col1:
+            st.markdown("#### 🚀 Immediate Actions (0-12 months)")
+            for action in region_info['immediate_actions']:
+                st.markdown(f"""
+                <div class="action-card immediate">
+                    <h5 style="margin: 0 0 10px 0; color: #E74C3C;">⚡ Priority Action</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
-    #     with col2:
-    #         st.markdown("#### 🔄 Medium-term (1-3 years)")
-    #         for action in region_info['medium_term']:
-    #             st.markdown(f"""
-    #             <div class="action-card medium-term">
-    #                 <h5 style="margin: 0 0 10px 0; color: #F39C12;">🔧 Strategic Initiative</h5>
-    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
-    #             </div>
-    #             """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("#### 🔄 Medium-term (1-3 years)")
+            for action in region_info['medium_term']:
+                st.markdown(f"""
+                <div class="action-card medium-term">
+                    <h5 style="margin: 0 0 10px 0; color: #F39C12;">🔧 Strategic Initiative</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
-    #     with col3:
-    #         st.markdown("#### 🌟 Long-term Vision (3-10 years)")
-    #         for action in region_info['long_term']:
-    #             st.markdown(f"""
-    #             <div class="action-card long-term">
-    #                 <h5 style="margin: 0 0 10px 0; color: #27AE60;">🎯 Transformation Goal</h5>
-    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
-    #             </div>
-    #             """, unsafe_allow_html=True)
+        with col3:
+            st.markdown("#### 🌟 Long-term Vision (3-10 years)")
+            for action in region_info['long_term']:
+                st.markdown(f"""
+                <div class="action-card long-term">
+                    <h5 style="margin: 0 0 10px 0; color: #27AE60;">🎯 Transformation Goal</h5>
+                    <p style="margin: 0; font-size: 14px;">{action}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
-    #     # KPIs and Budget Allocation
-    #     col1, col2 = st.columns(2)
+        # KPIs and Budget Allocation
+        col1, col2 = st.columns(2)
         
-    #     with col1:
-    #         st.markdown(f"""
-    #         <div class="kpi-section">
-    #             <h4 style="margin-top: 0;">📊 Success Metrics & KPIs</h4>
-    #             <ul style="margin: 10px 0; padding-left: 20px;">
-    #                 {''.join(f'<li style="margin: 5px 0;">{metric}</li>' for metric in region_info['success_metrics'])}
-    #             </ul>
-    #         </div>
-    #         """, unsafe_allow_html=True)
+        with col1:
+            st.markdown(f"""
+            <div class="kpi-section">
+                <h4 style="margin-top: 0;">📊 Success Metrics & KPIs</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    {''.join(f'<li style="margin: 5px 0;">{metric}</li>' for metric in region_info['success_metrics'])}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
         
-    #     with col2:
-    #         st.markdown(f"""
-    #         <div class="kpi-section">
-    #             <h4 style="margin-top: 0;">💰 Recommended Budget Allocation</h4>
-    #             <ul style="margin: 10px 0; padding-left: 20px;">
-    #                 {''.join(f'<li style="margin: 5px 0;"><strong>{area}:</strong> {percentage}</li>' for area, percentage in region_info['budget_allocation'].items())}
-    #             </ul>
-    #         </div>
-    #         """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class="kpi-section">
+                <h4 style="margin-top: 0;">💰 Recommended Budget Allocation</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    {''.join(f'<li style="margin: 5px 0;"><strong>{area}:</strong> {percentage}</li>' for area, percentage in region_info['budget_allocation'].items())}
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
         
-    #     # Challenges and Opportunities
-    #     col1, col2 = st.columns(2)
+        # Challenges and Opportunities
+        col1, col2 = st.columns(2)
         
-    #     with col1:
-    #         st.markdown("#### 🚧 Key Challenges")
-    #         for challenge in region_info['key_challenges']:
-    #             st.markdown(f"• {challenge}")
+        with col1:
+            st.markdown("#### 🚧 Key Challenges")
+            for challenge in region_info['key_challenges']:
+                st.markdown(f"• {challenge}")
         
-    #     with col2:
-    #         st.markdown("#### 🚀 Growth Opportunities")
-    #         for opportunity in region_info['opportunities']:
-    #             st.markdown(f"• {opportunity}")
+        with col2:
+            st.markdown("#### 🚀 Growth Opportunities")
+            for opportunity in region_info['opportunities']:
+                st.markdown(f"• {opportunity}")
                 
 
 
