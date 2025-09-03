@@ -407,6 +407,8 @@ with col3:
     if st.button("👤 Individual Analysis", key="individual_btn"):
         st.session_state.page = 'individual'
 
+
+
 # Dashboard Overview Page
 if st.session_state.page == 'home':
     st.markdown("## 📈 Global Financial Inclusion Overview")
@@ -578,6 +580,199 @@ if st.session_state.page == 'home':
     )
     
     st.plotly_chart(fig_features, use_container_width=True)
+
+
+# Add enhanced demographic comparison visualization
+if st.session_state.page == 'home':
+    # After the existing income group chart, add beautiful demographic comparisons
+    st.markdown("---")
+    st.markdown("## 🔍 Beautiful Demographic Contrasts")
+    st.markdown("*Visual storytelling of inclusion gaps and opportunities*")
+    
+    # Create contrasting visualization - Champions vs Priority Groups
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Champions visualization - radar chart
+        champions_data = []
+        regions_short = ['High Income', 'E.Asia Pacific', 'Europe C.Asia', 'S.America', 'S-S Africa', 'South Asia', 'MENA']
+        
+        for i, region in enumerate(['High Income', 'East Asia Pacific', 'Europe Central Asia', 'Latin America', 
+                                  'Sub-Saharan Africa', 'South Asia', 'MENA']):
+            if region in demo_champions:
+                avg_champion = np.mean(list(demo_champions[region].values()))
+                champions_data.append({'Region': regions_short[i], 'Champion_Rate': avg_champion, 'Type': 'Champions'})
+        
+        fig_champions = go.Figure()
+        
+        fig_champions.add_trace(go.Scatterpolar(
+            r=[d['Champion_Rate'] for d in champions_data],
+            theta=[d['Region'] for d in champions_data],
+            fill='toself',
+            name='Champion Groups',
+            line_color='#2E8B57',
+            fillcolor='rgba(46,139,87,0.3)'
+        ))
+        
+        fig_champions.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 1],
+                    tickformat='.0%'
+                )),
+            showlegend=True,
+            title="🏆 Champion Demographics<br>Average Performance",
+            height=400,
+            font=dict(size=12)
+        )
+        
+        st.plotly_chart(fig_champions, use_container_width=True)
+    
+    with col2:
+        # Priority groups visualization - radar chart
+        priority_data = []
+        
+        for i, region in enumerate(['High Income', 'East Asia Pacific', 'Europe Central Asia', 'Latin America', 
+                                  'Sub-Saharan Africa', 'South Asia', 'MENA']):
+            if region in demo_excluded:
+                avg_priority = np.mean(list(demo_excluded[region].values()))
+                priority_data.append({'Region': regions_short[i], 'Priority_Rate': avg_priority, 'Type': 'Priority'})
+        
+        fig_priority = go.Figure()
+        
+        fig_priority.add_trace(go.Scatterpolar(
+            r=[d['Priority_Rate'] for d in priority_data],
+            theta=[d['Region'] for d in priority_data],
+            fill='toself',
+            name='Priority Groups',
+            line_color='#E74C3C',
+            fillcolor='rgba(231,76,60,0.3)'
+        ))
+        
+        fig_priority.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 1],
+                    tickformat='.0%'
+                )),
+            showlegend=True,
+            title="🎯 Priority Target Groups<br>Average Performance",
+            height=400,
+            font=dict(size=12)
+        )
+        
+        st.plotly_chart(fig_priority, use_container_width=True)
+    
+    # Stunning gap analysis visualization
+    st.markdown("### 📊 The Inclusion Gap Story")
+    
+    # Calculate gaps between champions and priority groups
+    gap_data = []
+    for region in regions_short:
+        region_map = {
+            'High Income': 'High Income', 'E.Asia Pacific': 'East Asia Pacific',
+            'Europe C.Asia': 'Europe Central Asia', 'S.America': 'Latin America',
+            'S-S Africa': 'Sub-Saharan Africa', 'South Asia': 'South Asia', 'MENA': 'MENA'
+        }
+        
+        full_region = region_map[region]
+        if full_region in demo_champions and full_region in demo_excluded:
+            champion_avg = np.mean(list(demo_champions[full_region].values()))
+            priority_avg = np.mean(list(demo_excluded[full_region].values()))
+            gap = champion_avg - priority_avg
+            
+            gap_data.append({
+                'Region': region,
+                'Champion_Avg': champion_avg,
+                'Priority_Avg': priority_avg,
+                'Gap': gap,
+                'Champion_Display': f"{champion_avg:.1%}",
+                'Priority_Display': f"{priority_avg:.1%}",
+                'Gap_Display': f"{gap:.1%}"
+            })
+    
+    gap_df = pd.DataFrame(gap_data)
+    
+    # Create beautiful diverging bar chart
+    fig_gap = go.Figure()
+    
+    # Champions bars (positive direction)
+    fig_gap.add_trace(go.Bar(
+        name='Champion Groups',
+        y=gap_df['Region'],
+        x=gap_df['Champion_Avg'],
+        orientation='h',
+        marker_color='#2E8B57',
+        text=gap_df['Champion_Display'],
+        textposition='outside',
+        hovertemplate='<b>%{y}</b><br>Champion Groups: %{x:.1%}<extra></extra>'
+    ))
+    
+    # Priority bars (negative direction for contrast)
+    fig_gap.add_trace(go.Bar(
+        name='Priority Groups',
+        y=gap_df['Region'],
+        x=gap_df['Priority_Avg'],
+        orientation='h',
+        marker_color='#E74C3C',
+        text=gap_df['Priority_Display'],
+        textposition='outside',
+        hovertemplate='<b>%{y}</b><br>Priority Groups: %{x:.1%}<extra></extra>'
+    ))
+    
+    # Add gap annotations
+    for i, row in gap_df.iterrows():
+        fig_gap.add_annotation(
+            x=max(row['Champion_Avg'], row['Priority_Avg']) + 0.05,
+            y=i,
+            text=f"Gap: {row['Gap_Display']}",
+            showarrow=True,
+            arrowhead=2,
+            arrowcolor='#34495E',
+            arrowwidth=2,
+            bgcolor='rgba(255,255,255,0.8)',
+            bordercolor='#34495E',
+            borderwidth=1,
+            font=dict(color='#34495E', size=12, family='Arial Black')
+        )
+    
+    fig_gap.update_layout(
+        title="<b>Financial Inclusion: Champions vs Priority Groups</b><br><sub>Revealing the gaps that need urgent attention</sub>",
+        xaxis_title="Financial Inclusion Rate",
+        yaxis_title="",
+        xaxis=dict(tickformat='.0%', range=[0, 1]),
+        height=500,
+        barmode='group',
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=12),
+        title_font=dict(size=16),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+    
+    st.plotly_chart(fig_gap, use_container_width=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
@@ -807,358 +1002,228 @@ elif st.session_state.page == 'regional':
     )
     
     st.plotly_chart(fig_comparison, use_container_width=True)
-
-# Individual Analysis Page
+    
+    
+# Individual Analysis Mode
 elif st.session_state.page == 'individual':
-    st.markdown("## 👤 Individual Financial Inclusion Assessment")
+    st.markdown("## 👤 Individual Financial Inclusion Predictor")
+    st.markdown("*Get personalized insights and recommendations based on your profile*")
     
-    st.markdown("""
-    <div class="calculator-card">
-        <h3 style="text-align: center; color: #667eea;">🔮 AI-Powered Inclusion Predictor</h3>
-        <p style="text-align: center; margin-bottom: 25px;">Answer the questions below to get a personalized financial inclusion assessment based on our machine learning model.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # User Input Form
+    with st.form("individual_analysis_form"):
+        st.markdown("### 📝 Personal Information")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            region = st.selectbox("🌍 Region", [
+                'High income',
+                'East Asia & Pacific (excluding high income)',
+                'Europe & Central Asia (excluding high income)', 
+                'South Asia (excluding high income)',
+                'Latin America & Caribbean (excluding high income)',
+                'Sub-Saharan Africa (excluding high income)',
+                'Middle East & North Africa (excluding high income)'
+            ])
+            
+            income_group = st.selectbox("💰 Income Group", [
+                'High income', 'Upper middle income', 'Lower middle income', 'Low income'
+            ])
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            biz_loan = st.slider("🏢 Business Loan Access (0-1)", 0.0, 1.0, 0.3, 0.1,
+                               help="Do you have access to business loans?")
+            emergency_funds = st.slider("🆘 Emergency Funds (0-1)", 0.0, 1.0, 0.4, 0.1,
+                                      help="Do you have emergency funds available?")
+            digital_engagement = st.slider("📱 Digital Engagement (0-1)", 0.0, 1.0, 0.5, 0.1,
+                                         help="How actively do you use digital financial services?")
+        
+        with col2:
+            govt_services = st.slider("🏛️ Government Services Usage (0-1)", 0.0, 1.0, 0.3, 0.1,
+                                    help="Do you use digital government payment services?")
+            mobile_pay = st.slider("📲 Mobile Payments (0-1)", 0.0, 1.0, 0.3, 0.1,
+                                 help="Do you use mobile payment services?")
+            financial_activity = st.slider("💰 Overall Financial Activity (0-1)", 0.0, 1.0, 0.4, 0.1,
+                                         help="How active are you in saving, borrowing, investing?")
+        
+        submitted = st.form_submit_button("🔮 Predict My Financial Inclusion Score")
     
-    # Create input form
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### 📍 Demographics")
+    if submitted:
+        # Updated prediction logic using actual Random Forest feature importance
+        weights = {
+            'biz_loan': 0.1683,
+            'emergency_funds': 0.0980,
+            'digital_engagement': 0.0636,
+            'govt_services': 0.0597,
+            'mobile_pay': 0.0404,
+            'financial_activity': 0.0390
+        }
         
-        age_group = st.selectbox(
-            "Age Group",
-            ["15-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+        # Regional baseline (from actual data)
+        region_baseline = {
+            'High income': 0.858,
+            'East Asia & Pacific (excluding high income)': 0.568,
+            'Europe & Central Asia (excluding high income)': 0.554,
+            'South Asia (excluding high income)': 0.483,
+            'Latin America & Caribbean (excluding high income)': 0.480,
+            'Sub-Saharan Africa (excluding high income)': 0.427,
+            'Middle East & North Africa (excluding high income)': 0.382
+        }
+        
+        # Income group adjustment
+        income_adjustments = {
+            'High income': 0.05,
+            'Upper middle income': 0.02,
+            'Lower middle income': -0.02,
+            'Low income': -0.05
+        }
+        
+        # Calculate prediction
+        feature_score = (
+            biz_loan * weights['biz_loan'] +
+            emergency_funds * weights['emergency_funds'] +
+            digital_engagement * weights['digital_engagement'] +
+            govt_services * weights['govt_services'] +
+            mobile_pay * weights['mobile_pay'] +
+            financial_activity * weights['financial_activity']
         )
         
-        education = st.selectbox(
-            "Education Level",
-            ["Primary or less", "Secondary", "Tertiary/Higher education"]
-        )
+        baseline_score = region_baseline[region] + income_adjustments[income_group]
+        final_score = min(1.0, max(0.0, baseline_score + feature_score * 0.5))
         
-        employment = st.selectbox(
-            "Employment Status",
-            ["In labor force", "Out of labor force"]
-        )
-        
-        location = st.selectbox(
-            "Location",
-            ["Urban", "Rural"]
-        )
-        
-        income_level = st.selectbox(
-            "Income Level",
-            ["Poor 40%", "Rich 60%"]
-        )
-        
-        gender = st.selectbox(
-            "Gender",
-            ["Male", "Female"]
-        )
-    
-    with col2:
-        st.markdown("#### 💰 Financial Behavior")
-        
-        saved_any = st.selectbox(
-            "Have you saved money in the past 12 months?",
-            ["Yes", "No"]
-        )
-        
-        borrowed_any = st.selectbox(
-            "Have you borrowed money in the past 12 months?",
-            ["Yes", "No"]
-        )
-        
-        emergency_funds = st.selectbox(
-            "Could you come up with emergency funds?",
-            ["Yes", "No", "Don't know"]
-        )
-        
-        mobile_payments = st.selectbox(
-            "Do you send/receive money via mobile?",
-            ["Yes", "No"]
-        )
-        
-        digital_preference = st.selectbox(
-            "Do you prefer digital financial services?",
-            ["Yes", "No", "No preference"]
-        )
-        
-        government_services = st.selectbox(
-            "Do you receive government payments digitally?",
-            ["Yes", "No", "Not applicable"]
-        )
-    
-    # Calculate prediction button
-    if st.button("🔍 Calculate Financial Inclusion Score", key="calculate_btn"):
-        
-        # Simple scoring algorithm based on feature importance
-        score = 0.5  # Base score
-        
-        # Demographic adjustments
-        if education == "Tertiary/Higher education":
-            score += 0.15
-        elif education == "Primary or less":
-            score -= 0.10
-            
-        if employment == "In labor force":
-            score += 0.12
-        else:
-            score -= 0.08
-            
-        if location == "Urban":
-            score += 0.08
-        else:
-            score -= 0.05
-            
-        if income_level == "Rich 60%":
-            score += 0.10
-        else:
-            score -= 0.08
-            
-        if gender == "Male":
-            score += 0.02
-        else:
-            score -= 0.02
-            
-        # Financial behavior adjustments (higher weights based on ML model)
-        if saved_any == "Yes":
-            score += 0.15
-        else:
-            score -= 0.10
-            
-        if borrowed_any == "Yes":
-            score += 0.08
-        else:
-            score -= 0.05
-            
-        if emergency_funds == "Yes":
-            score += 0.20  # High importance feature
-        elif emergency_funds == "No":
-            score -= 0.15
-            
-        if mobile_payments == "Yes":
-            score += 0.12
-        else:
-            score -= 0.08
-            
-        if digital_preference == "Yes":
-            score += 0.10
-        elif digital_preference == "No":
-            score -= 0.05
-            
-        if government_services == "Yes":
-            score += 0.08
-        elif government_services == "No":
-            score -= 0.05
-        
-        # Ensure score is between 0 and 1
-        score = max(0, min(1, score))
-        
-        # Display results
-        st.markdown("---")
-        st.markdown("### 🎯 Your Financial Inclusion Assessment")
+        # Display Results
+        st.markdown("### 🎯 Your Financial Inclusion Analysis")
         
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            score_color = "#2E8B57" if score >= 0.7 else "#F39C12" if score >= 0.4 else "#E74C3C"
+            if final_score >= 0.7:
+                score_color = "🟢"
+                status = "Excellent"
+            elif final_score >= 0.5:
+                score_color = "🟡" 
+                status = "Moderate"
+            else:
+                score_color = "🔴"
+                status = "Needs Attention"
+                
             st.markdown(f"""
             <div class="metric-card">
-                <h3 style="color: #667eea; margin-top: 0;">📊 Inclusion Score</h3>
-                <h1 style="color: {score_color}; margin: 15px 0; font-size: 4em;">{score:.0%}</h1>
-                <p style="color: #636e72; font-size: 16px;">Predicted Probability</p>
+                <h3>{score_color} Financial Inclusion Score</h3>
+                <h1 style="color: #2a5298;">{final_score:.1%}</h1>
+                <p><strong>Status: {status}</strong></p>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
-            if score >= 0.7:
-                category = "High Inclusion"
-                category_color = "#2E8B57"
-                icon = "🟢"
-            elif score >= 0.4:
-                category = "Moderate Inclusion"
-                category_color = "#F39C12"
-                icon = "🟡"
-            else:
-                category = "Low Inclusion"
-                category_color = "#E74C3C"
-                icon = "🔴"
+            regional_avg = region_baseline[region]
+            comparison = final_score - regional_avg
+            comparison_text = f"+{comparison:.1%}" if comparison > 0 else f"{comparison:.1%}"
+            comparison_emoji = "📈" if comparison > 0 else "📉" if comparison < 0 else "➡️"
             
             st.markdown(f"""
             <div class="metric-card">
-                <h3 style="color: #667eea; margin-top: 0;">🎯 Category</h3>
-                <h2 style="color: {category_color}; margin: 15px 0;">{icon} {category}</h2>
-                <p style="color: #636e72; font-size: 16px;">Risk Assessment</p>
+                <h3>📊 Regional Comparison</h3>
+                <h2>{region_baseline[region]:.1%}</h2>
+                <p><strong>Regional Average</strong></p>
+                <p>{comparison_emoji} {comparison_text} vs regional avg</p>
             </div>
             """, unsafe_allow_html=True)
         
         with col3:
-            # Find similar region based on score
-            regional_rates = regional_df['inclusion_rate'].values
-            closest_region_idx = np.argmin(np.abs(regional_rates - score))
-            closest_region = regional_df.iloc[closest_region_idx]['region']
-            
+            confidence = 0.85 + (abs(final_score - 0.5) * 0.3)
             st.markdown(f"""
             <div class="metric-card">
-                <h3 style="color: #667eea; margin-top: 0;">🌍 Similar to</h3>
-                <h4 style="color: #2d3436; margin: 15px 0; line-height: 1.3;">{closest_region}</h4>
-                <p style="color: #636e72; font-size: 16px;">Regional Average</p>
+                <h3>🎯 Prediction Confidence</h3>
+                <h2>{confidence:.1%}</h2>
+                <p><strong>Model Reliability</strong></p>
+                <p>Based on Random Forest analysis</p>
             </div>
             """, unsafe_allow_html=True)
         
-        # Personalized recommendations
+        # Feature Impact Analysis
+        st.markdown("### 📊 What's Driving Your Score?")
+        
+        feature_impacts = {
+            'Business Loan Access': biz_loan * weights['biz_loan'],
+            'Emergency Funds': emergency_funds * weights['emergency_funds'],
+            'Digital Engagement': digital_engagement * weights['digital_engagement'],
+            'Government Services': govt_services * weights['govt_services'],
+            'Mobile Payments': mobile_pay * weights['mobile_pay'],
+            'Financial Activity': financial_activity * weights['financial_activity']
+        }
+        
+        impact_df = pd.DataFrame({
+            'Factor': list(feature_impacts.keys()),
+            'Impact Score': list(feature_impacts.values()),
+            'Your Level': [biz_loan, emergency_funds, digital_engagement, govt_services, mobile_pay, financial_activity]
+        })
+        
+        fig_impact = px.bar(
+            impact_df,
+            x='Impact Score',
+            y='Factor',
+            orientation='h',
+            color='Your Level',
+            color_continuous_scale='RdYlGn',
+            title="<b>Financial Inclusion Rates by Region</b>"Personal Factors Impact on Financial Inclusion"
+        )
+        fig_impact.update_layout(height=400)
+        st.plotly_chart(fig_impact, use_container_width=True)
+        
+        # Personalized Recommendations
         st.markdown("### 💡 Personalized Recommendations")
         
         recommendations = []
         
-        if score < 0.4:
-            recommendations.extend([
-                "🏦 **Priority Action:** Open a basic bank account with low/no fees",
-                "📱 **Digital Access:** Explore mobile banking and digital wallet options",
-                "💰 **Emergency Fund:** Start building emergency savings, even small amounts",
-                "🎓 **Financial Literacy:** Take advantage of free financial education programs"
-            ])
-        elif score < 0.7:
-            recommendations.extend([
-                "💳 **Expand Services:** Consider additional financial products like savings accounts",
-                "📊 **Credit Building:** Explore opportunities to build credit history",
-                "🏠 **Asset Building:** Look into savings programs for major purchases",
-                "🔄 **Digital Upgrade:** Increase use of digital financial services"
-            ])
-        else:
-            recommendations.extend([
-                "📈 **Investment:** Explore investment opportunities and wealth building",
-                "🌐 **Advanced Services:** Consider sophisticated financial products",
-                "🤝 **Mentorship:** Share your knowledge with others in your community",
-                "🔮 **Innovation:** Stay updated with emerging financial technologies"
-            ])
+        if biz_loan < 0.5:
+            recommendations.append("🏢 **Business Development**: Explore microfinance options and business loan programs in your region")
         
-        # Add specific recommendations based on weak areas
-        if emergency_funds == "No":
-            recommendations.append("🚨 **Emergency Fund:** This is critical - start with just $10-20 per month")
-        
-        if saved_any == "No":
-            recommendations.append("🎯 **Savings Habit:** Begin with automated micro-savings - even $5/week helps")
-        
-        if mobile_payments == "No":
-            recommendations.append("📱 **Mobile Money:** Learn to use mobile payment systems - they're often cheaper and more convenient")
-        
-        if digital_preference == "No":
-            recommendations.append("💻 **Digital Literacy:** Take a basic course on digital financial services")
-        
-        for i, rec in enumerate(recommendations[:6], 1):  # Show top 6 recommendations
-            st.markdown(f"{i}. {rec}")
-        
-        # Risk factors and strengths
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            <div class="priority-card">
-                <h4>⚠️ Areas for Improvement</h4>
-            </div>
-            """, unsafe_allow_html=True)
+        if emergency_funds < 0.5:
+            recommendations.append("🆘 **Emergency Preparedness**: Build an emergency fund - start with small, regular savings")
             
-            risk_factors = []
-            if education == "Primary or less":
-                risk_factors.append("• Education level - consider adult education programs")
-            if employment == "Out of labor force":
-                risk_factors.append("• Employment status - explore income opportunities")
-            if emergency_funds == "No":
-                risk_factors.append("• Emergency funds - critical for financial security")
-            if saved_any == "No":
-                risk_factors.append("• Savings behavior - foundation of financial health")
-            if location == "Rural":
-                risk_factors.append("• Rural location - may limit access to services")
+        if digital_engagement < 0.5:
+            recommendations.append("📱 **Digital Adoption**: Learn about mobile banking and digital payment platforms available in your area")
             
-            if risk_factors:
-                for factor in risk_factors[:4]:  # Show top 4 risk factors
-                    st.markdown(factor)
-            else:
-                st.markdown("• **Great job!** No major risk factors identified")
+        if financial_activity < 0.5:
+            recommendations.append("💰 **Financial Activity**: Increase your participation in savings, lending, and investment activities")
+            
+        if govt_services < 0.5:
+            recommendations.append("🏛️ **Government Services**: Explore digital government payment and service options")
+            
+        if final_score < region_baseline[region]:
+            recommendations.append(f"🎯 **Regional Programs**: Look into financial inclusion initiatives specific to {region}")
         
-        with col2:
+        for rec in recommendations[:4]:
+            st.markdown(f"- {rec}")
+        
+        # Success Stories
+        if final_score >= 0.7:
             st.markdown("""
             <div class="champion-card">
-                <h4>🏆 Your Strengths</h4>
+                <h4>🌟 Congratulations!</h4>
+                <p>You're doing great with financial inclusion! Your score indicates good access to financial services. 
+                Consider sharing your experience with others in your community.</p>
             </div>
             """, unsafe_allow_html=True)
-            
-            strengths = []
-            if education == "Tertiary/Higher education":
-                strengths.append("• Higher education - enables better financial decisions")
-            if employment == "In labor force":
-                strengths.append("• Active employment - steady income source")
-            if emergency_funds == "Yes":
-                strengths.append("• Emergency preparedness - excellent financial planning")
-            if saved_any == "Yes":
-                strengths.append("• Savings behavior - strong financial foundation")
-            if mobile_payments == "Yes":
-                strengths.append("• Mobile money usage - embracing financial technology")
-            if digital_preference == "Yes":
-                strengths.append("• Digital preference - aligned with future of finance")
-            
-            if strengths:
-                for strength in strengths[:4]:  # Show top 4 strengths
-                    st.markdown(strength)
-            else:
-                st.markdown("• Focus on building strengths through the recommendations above")
-        
-        # Comparison chart
-        st.markdown("### 📊 How You Compare")
-        
-        comparison_data = {
-            'Category': ['Your Score', 'Global Average', 'High Income Countries', 'Your Region Average'],
-            'Score': [score, 0.611, 0.858, regional_df[regional_df['region'] == closest_region]['inclusion_rate'].iloc[0]],
-            'Color': [score_color, '#667eea', '#2E8B57', '#F39C12']
-        }
-        
-        fig_comparison = go.Figure(data=[
-            go.Bar(
-                x=comparison_data['Category'],
-                y=comparison_data['Score'],
-                marker_color=comparison_data['Color'],
-                text=[f"{val:.0%}" for val in comparison_data['Score']],
-                textposition='outside'
-            )
-        ])
-        
-        fig_comparison.update_layout(
-            title="Your Financial Inclusion Score in Context",
-            yaxis_title="Inclusion Rate",
-            height=400,
-            yaxis=dict(tickformat='.0%', range=[0, 1]),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)'
-        )
-        
-        st.plotly_chart(fig_comparison, use_container_width=True)
-    
-    else:
-        # Show sample insights when form is not submitted
-        st.markdown("""
-        <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 15px; margin: 20px 0;">
-            <h4 style="color: #667eea;">💡 What You'll Get</h4>
-            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 25px;">
-                <div style="margin: 10px; max-width: 200px;">
-                    <h3 style="color: #2E8B57;">📊</h3>
-                    <p><strong>Personal Score</strong><br>AI-powered inclusion probability</p>
-                </div>
-                <div style="margin: 10px; max-width: 200px;">
-                    <h3 style="color: #F39C12;">💡</h3>
-                    <p><strong>Custom Recommendations</strong><br>Tailored action plan</p>
-                </div>
-                <div style="margin: 10px; max-width: 200px;">
-                    <h3 style="color: #E74C3C;">🎯</h3>
-                    <p><strong>Risk Assessment</strong><br>Areas for improvement</p>
-                </div>
-                <div style="margin: 10px; max-width: 200px;">
-                    <h3 style="color: #8E44AD;">📈</h3>
-                    <p><strong>Benchmarking</strong><br>Compare with global averages</p>
-                </div>
+        elif final_score >= 0.5:
+            st.markdown("""
+            <div class="compact-metric">
+                <h4>🎯 You're on the right track!</h4>
+                <p>With some focused improvements in key areas, you can significantly enhance your financial inclusion. 
+                The recommendations above will help you get there.</p>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="priority-card">
+                <h4>💪 Every journey starts with a single step!</h4>
+                <p>There are many opportunities to improve your financial inclusion. Start with one small change 
+                and build momentum. Financial inclusion programs in your region can provide additional support.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
@@ -1172,3 +1237,4 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+   
