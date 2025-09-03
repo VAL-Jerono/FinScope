@@ -1616,7 +1616,8 @@ elif st.session_state.page == 'individual':
             'Lower middle income': -0.02,
             'Low income': -0.05
         }
-        
+    
+    
         # Calculate prediction
         feature_score = (
             biz_loan * weights['biz_loan'] +
