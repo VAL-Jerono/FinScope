@@ -1168,7 +1168,7 @@ elif st.session_state.page == 'individual':
             orientation='h',
             color='Your Level',
             color_continuous_scale='RdYlGn',
-            title="<b>Financial Inclusion Rates by Region</b>"Personal Factors Impact on Financial Inclusion"
+            title="<b>Personal Factors Impact on Financial Inclusion</b>"
         )
         fig_impact.update_layout(height=400)
         st.plotly_chart(fig_impact, use_container_width=True)
