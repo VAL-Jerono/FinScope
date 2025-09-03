@@ -180,28 +180,99 @@ def load_data():
                       0.0392, 0.0390, 0.0378, 0.0351, 0.0273, 0.0251, 0.0250]
     }
     
-    # Cleaned demographic data - Top performers and Priority groups
-    top_champions = [
-        {'Group': 'In Labor Force', 'Rate': 0.930, 'Region': 'High Income', 'Icon': '💼'},
-        {'Group': 'Rich 60%', 'Rate': 0.903, 'Region': 'High Income', 'Icon': '💰'},
-        {'Group': 'Higher Education', 'Rate': 0.897, 'Region': 'High Income', 'Icon': '🎓'},
-        {'Group': 'Urban', 'Rate': 0.891, 'Region': 'High Income', 'Icon': '🏙️'},
-        {'Group': 'Men', 'Rate': 0.888, 'Region': 'High Income', 'Icon': '👨'},
-        {'Group': 'Urban', 'Rate': 0.769, 'Region': 'Europe Central Asia', 'Icon': '🏙️'},
-        {'Group': 'Urban', 'Rate': 0.766, 'Region': 'East Asia Pacific', 'Icon': '🏙️'},
-        {'Group': 'Rural', 'Rate': 0.707, 'Region': 'Europe Central Asia', 'Icon': '🌾'}
-    ]
-    
-    priority_groups = [
-        {'Group': 'Age 15-24', 'Rate': 0.267, 'Region': 'MENA', 'Icon': '👶'},
-        {'Group': 'Out of Labor', 'Rate': 0.295, 'Region': 'MENA', 'Icon': '❌'},
-        {'Group': 'Women', 'Rate': 0.300, 'Region': 'MENA', 'Icon': '👩'},
-        {'Group': 'Poor 40%', 'Rate': 0.304, 'Region': 'MENA', 'Icon': '💸'},
-        {'Group': 'Primary Education', 'Rate': 0.330, 'Region': 'MENA', 'Icon': '📚'},
-        {'Group': 'Out of Labor', 'Rate': 0.330, 'Region': 'Sub-Saharan Africa', 'Icon': '❌'},
-        {'Group': 'Poor 40%', 'Rate': 0.333, 'Region': 'Sub-Saharan Africa', 'Icon': '💸'},
-        {'Group': 'Primary Education', 'Rate': 0.337, 'Region': 'Sub-Saharan Africa', 'Icon': '📚'}
-    ]
+    # Comprehensive demographic data across all regions
+    regional_demographic_data = {
+        'In Labor Force': {
+            'High income': 0.930,
+            'Europe & Central Asia (excluding high income)': 0.704,
+            'East Asia & Pacific (excluding high income)': 0.597,
+            'South Asia (excluding high income)': 0.560,
+            'Latin America & Caribbean (excluding high income)': 0.569,
+            'Middle East & North Africa (excluding high income)': 0.540,
+            'Sub-Saharan Africa (excluding high income)': 0.500
+        },
+        'Men': {
+            'High income': 0.888,
+            'Europe & Central Asia (excluding high income)': 0.596,
+            'East Asia & Pacific (excluding high income)': 0.576,
+            'South Asia (excluding high income)': 0.533,
+            'Latin America & Caribbean (excluding high income)': 0.527,
+            'Middle East & North Africa (excluding high income)': 0.476,
+            'Sub-Saharan Africa (excluding high income)': 0.468
+        },
+        'Women': {
+            'High income': 0.855,
+            'Europe & Central Asia (excluding high income)': 0.540,
+            'East Asia & Pacific (excluding high income)': 0.576,
+            'South Asia (excluding high income)': 0.435,
+            'Latin America & Caribbean (excluding high income)': 0.454,
+            'Middle East & North Africa (excluding high income)': 0.300,
+            'Sub-Saharan Africa (excluding high income)': 0.383
+        },
+        'Rich 60%': {
+            'High income': 0.903,
+            'Europe & Central Asia (excluding high income)': 0.626,
+            'East Asia & Pacific (excluding high income)': 0.637,
+            'South Asia (excluding high income)': 0.537,
+            'Latin America & Caribbean (excluding high income)': 0.559,
+            'Middle East & North Africa (excluding high income)': 0.448,
+            'Sub-Saharan Africa (excluding high income)': 0.497
+        },
+        'Poor 40%': {
+            'High income': 0.834,
+            'Europe & Central Asia (excluding high income)': 0.484,
+            'East Asia & Pacific (excluding high income)': 0.484,
+            'South Asia (excluding high income)': 0.401,
+            'Latin America & Caribbean (excluding high income)': 0.381,
+            'Middle East & North Africa (excluding high income)': 0.304,
+            'Sub-Saharan Africa (excluding high income)': 0.333
+        },
+        'Urban': {
+            'High income': 0.891,
+            'Europe & Central Asia (excluding high income)': 0.769,
+            'East Asia & Pacific (excluding high income)': 0.766,
+            'South Asia (excluding high income)': 0.607,
+            'Latin America & Caribbean (excluding high income)': 0.642,
+            'Middle East & North Africa (excluding high income)': 0.491,
+            'Sub-Saharan Africa (excluding high income)': 0.645
+        },
+        'Rural': {
+            'High income': 0.879,
+            'Europe & Central Asia (excluding high income)': 0.707,
+            'East Asia & Pacific (excluding high income)': 0.670,
+            'South Asia (excluding high income)': 0.596,
+            'Latin America & Caribbean (excluding high income)': 0.556,
+            'Middle East & North Africa (excluding high income)': 0.392,
+            'Sub-Saharan Africa (excluding high income)': 0.516
+        },
+        'Higher Education': {
+            'High income': 0.897,
+            'Europe & Central Asia (excluding high income)': 0.638,
+            'East Asia & Pacific (excluding high income)': 0.677,
+            'South Asia (excluding high income)': 0.597,
+            'Latin America & Caribbean (excluding high income)': 0.564,
+            'Middle East & North Africa (excluding high income)': 0.425,
+            'Sub-Saharan Africa (excluding high income)': 0.570
+        },
+        'Primary Education': {
+            'High income': 0.769,
+            'Europe & Central Asia (excluding high income)': 0.390,
+            'East Asia & Pacific (excluding high income)': 0.457,
+            'South Asia (excluding high income)': 0.419,
+            'Latin America & Caribbean (excluding high income)': 0.368,
+            'Middle East & North Africa (excluding high income)': 0.330,
+            'Sub-Saharan Africa (excluding high income)': 0.337
+        },
+        'Age 15-24': {
+            'High income': 0.781,
+            'Europe & Central Asia (excluding high income)': 0.428,
+            'East Asia & Pacific (excluding high income)': 0.543,
+            'South Asia (excluding high income)': 0.431,
+            'Latin America & Caribbean (excluding high income)': 0.403,
+            'Middle East & North Africa (excluding high income)': 0.267,
+            'Sub-Saharan Africa (excluding high income)': 0.361
+        }
+    }
 
     # Country mapping with ISO codes for proper map visualization
     country_mapping = {
@@ -628,7 +699,7 @@ def load_data():
         }
     }
     
-    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping, top_champions, priority_groups
+    return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping, regional_demographic_data
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -637,7 +708,7 @@ if 'selected_region' not in st.session_state:
     st.session_state.selected_region = None
 
 # Load data
-regional_df, income_df, feature_df, region_mapping, country_mapping, top_champions, priority_groups = load_data()
+regional_df, income_df, feature_df, region_mapping, country_mapping, regional_demographic_data = load_data()
 
 # Header
 st.markdown("""
@@ -709,7 +780,7 @@ if st.session_state.page == 'home':
         </div>
         """, unsafe_allow_html=True)
     
-    # Quick Regional Comparison - Clean and beautiful
+    # Quick Regional Comparison
     st.markdown("### 🌍 Regional Performance at a Glance")
     
     fig_overview = px.bar(
@@ -752,51 +823,230 @@ if st.session_state.page == 'home':
     
     st.plotly_chart(fig_overview, use_container_width=True)
     
-    # Clean Demographics Section
-    st.markdown("### 🏆 Financial Inclusion Champions")
-    st.markdown("*Top-performing demographic groups leading financial inclusion globally*")
-    
-    st.markdown("""
-    <div class="demographic-showcase">
+    # Enhanced Demographic Analysis with Regional Range Comparison
+    st.markdown("### 🌍 Global Financial Inclusion: Demographic Range Analysis")
+    st.markdown("*Complete range across all regions for each demographic group*")
+
+    # Prepare data for range chart
+    demographic_groups = []
+    min_values = []
+    max_values = []
+    ranges = []
+    best_regions = []
+    worst_regions = []
+
+    for demo_group, regions in regional_demographic_data.items():
+        values = list(regions.values())
+        region_names = list(regions.keys())
+        
+        min_val = min(values)
+        max_val = max(values)
+        
+        demographic_groups.append(demo_group)
+        min_values.append(min_val)
+        max_values.append(max_val)
+        ranges.append(max_val - min_val)
+        
+        best_regions.append(region_names[values.index(max_val)])
+        worst_regions.append(region_names[values.index(min_val)])
+
+    # Create range chart
+    fig_range = go.Figure()
+
+    # Sort by range size (largest disparities first)
+    sorted_indices = sorted(range(len(ranges)), key=lambda i: ranges[i], reverse=True)
+
+    y_labels_sorted = [demographic_groups[i] for i in sorted_indices]
+    min_vals_sorted = [min_values[i] for i in sorted_indices]
+    max_vals_sorted = [max_values[i] for i in sorted_indices]
+    ranges_sorted = [ranges[i] for i in sorted_indices]
+    best_regions_sorted = [best_regions[i] for i in sorted_indices]
+    worst_regions_sorted = [worst_regions[i] for i in sorted_indices]
+
+    # Add range bars (from min to max)
+    for i in range(len(y_labels_sorted)):
+        # Background range bar
+        fig_range.add_trace(go.Bar(
+            name='Regional Range' if i == 0 else '',
+            y=[y_labels_sorted[i]],
+            x=[max_vals_sorted[i] - min_vals_sorted[i]],
+            base=[min_vals_sorted[i]],
+            orientation='h',
+            marker=dict(color='lightgray', opacity=0.5),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>{y_labels_sorted[i]}</b><br>Range: {ranges_sorted[i]:.0%}<br>Best: {best_regions_sorted[i]} ({max_vals_sorted[i]:.0%})<br>Worst: {worst_regions_sorted[i]} ({min_vals_sorted[i]:.0%})<extra></extra>"
+        ))
+        
+        # Min value marker
+        fig_range.add_trace(go.Scatter(
+            name='Lowest Rate' if i == 0 else '',
+            x=[min_vals_sorted[i]],
+            y=[y_labels_sorted[i]],
+            mode='markers',
+            marker=dict(color='#E74C3C', size=12, symbol='circle'),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>Lowest:</b> {worst_regions_sorted[i]}<br>Rate: {min_vals_sorted[i]:.0%}<extra></extra>"
+        ))
+        
+        # Max value marker
+        fig_range.add_trace(go.Scatter(
+            name='Highest Rate' if i == 0 else '',
+            x=[max_vals_sorted[i]],
+            y=[y_labels_sorted[i]],
+            mode='markers',
+            marker=dict(color='#27AE60', size=12, symbol='circle'),
+            showlegend=True if i == 0 else False,
+            hovertemplate=f"<b>Highest:</b> {best_regions_sorted[i]}<br>Rate: {max_vals_sorted[i]:.0%}<extra></extra>"
+        ))
+
+    # Add range annotations
+    for i in range(len(y_labels_sorted)):
+        fig_range.add_annotation(
+            x=(min_vals_sorted[i] + max_vals_sorted[i]) / 2,
+            y=i,
+            text=f"{ranges_sorted[i]:.0%}",
+            showarrow=False,
+            font=dict(color='black', size=11, family='Arial Black'),
+            bgcolor='white',
+            bordercolor='gray',
+            borderwidth=1
+        )
+
+    fig_range.update_layout(
+        title=dict(
+            text="<b>Global Financial Inclusion Disparities</b><br><span style='font-size:14px; color:#666'>Regional range for each demographic group (sorted by disparity size)</span>",
+            x=0.5,
+            font=dict(size=18)
+        ),
+        xaxis=dict(
+            title="Account Ownership Rate",
+            tickformat='.0%',
+            range=[0, 1.0],
+            gridcolor='lightgray',
+            gridwidth=1
+        ),
+        yaxis=dict(title="Demographic Groups"),
+        height=700,
+        font=dict(family="Arial, sans-serif", size=11),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        margin=dict(l=150, r=50, t=100, b=50)
+    )
+
+    st.plotly_chart(fig_range, use_container_width=True)
+
+    # Regional performance heatmap
+    st.markdown("### 🔥 Regional Performance Heatmap")
+    st.markdown("*Color-coded performance across all demographic groups by region*")
+
+    # Create heatmap data
+    heatmap_data = []
+    regions_list = ['High income', 'Europe & Central Asia (excluding high income)', 'East Asia & Pacific (excluding high income)', 'South Asia (excluding high income)', 'Latin America & Caribbean (excluding high income)', 'Middle East & North Africa (excluding high income)', 'Sub-Saharan Africa (excluding high income)']
+
+    for demo_group in demographic_groups:
+        row = []
+        for region in regions_list:
+            if region in regional_demographic_data[demo_group]:
+                row.append(regional_demographic_data[demo_group][region])
+            else:
+                row.append(None)
+        heatmap_data.append(row)
+
+    fig_heatmap = go.Figure(data=go.Heatmap(
+        z=heatmap_data,
+        x=[region.replace(' (excluding high income)', '').replace(' & ', ' &<br>') for region in regions_list],
+        y=demographic_groups,
+        colorscale='RdYlGn',
+        zmin=0,
+        zmax=1,
+        colorbar=dict(
+            title="Account<br>Ownership<br>Rate",
+            titleside="right",
+            tickmode="linear",
+            tick0=0,
+            dtick=0.2,
+            tickformat='.0%'
+        ),
+        hoverongaps=False,
+        hovertemplate="<b>%{y}</b><br>%{x}<br>Rate: %{z:.0%}<extra></extra>"
+    ))
+
+    fig_heatmap.update_layout(
+        title=dict(
+            text="<b>Regional Performance Matrix</b><br><span style='font-size:14px; color:#666'>Account ownership rates by demographic group and region</span>",
+            x=0.5,
+            font=dict(size=18)
+        ),
+        height=600,
+        font=dict(family="Arial, sans-serif", size=11),
+        margin=dict(l=150, r=100, t=80, b=100)
+    )
+
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+
+    # Summary insights
+    st.markdown("### 📊 Key Disparities Revealed")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    largest_disparity_idx = ranges.index(max(ranges))
+    smallest_disparity_idx = ranges.index(min(ranges))
+
+    with col1:
+        st.metric(
+            label="🔴 Largest Disparity",
+            value=f"{max(ranges):.0%}",
+            delta=f"{demographic_groups[largest_disparity_idx]}"
+        )
+
+    with col2:
+        st.metric(
+            label="🟢 Smallest Disparity",
+            value=f"{min(ranges):.0%}",
+            delta=f"{demographic_groups[smallest_disparity_idx]}"
+        )
+
+    with col3:
+        best_overall_region = max(regions_list, key=lambda r: np.mean([regional_demographic_data[d].get(r, 0) for d in demographic_groups]))
+        best_avg = np.mean([regional_demographic_data[d].get(best_overall_region, 0) for d in demographic_groups])
+        st.metric(
+            label="🏆 Best Overall Region",
+            value=f"{best_avg:.0%}",
+            delta=best_overall_region.replace(' (excluding high income)', '')
+        )
+
+    with col4:
+        worst_overall_region = min(regions_list, key=lambda r: np.mean([regional_demographic_data[d].get(r, 0) for d in demographic_groups]))
+        worst_avg = np.mean([regional_demographic_data[d].get(worst_overall_region, 0) for d in demographic_groups])
+        st.metric(
+            label="🎯 Most Needs Support",
+            value=f"{worst_avg:.0%}",
+            delta=worst_overall_region.replace(' (excluding high income)', '')
+        )
+
+    # Action insights
+    st.markdown("### 🚀 Strategic Insights")
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 10px 0;">
+    <h4 style="margin-top: 0; color: white;">Critical Findings:</h4>
+    <ul>
+    <li><strong>Highest Disparity:</strong> {demographic_groups[largest_disparity_idx]} shows {max(ranges):.0%} gap between regions</li>
+    <li><strong>Most Consistent:</strong> {demographic_groups[smallest_disparity_idx]} has only {min(ranges):.0%} variation across regions</li>
+    <li><strong>Universal Challenge:</strong> All demographic groups show significant regional variations</li>
+    <li><strong>High Income Dominance:</strong> Consistently leads in nearly all categories</li>
+    <li><strong>MENA & Sub-Saharan Africa:</strong> Most frequently appear as lowest performers</li>
+    </ul>
+    </div>
     """, unsafe_allow_html=True)
-    
-    cols = st.columns(4)
-    for idx, champion in enumerate(top_champions):
-        col = cols[idx % 4]
-        with col:
-            st.markdown(f"""
-            <div class="demo-card champion-card">
-                <div style="font-size: 24px; margin-bottom: 10px;">{champion['Icon']}</div>
-                <h3 style="margin: 0; color: #27AE60; font-size: 28px;">{champion['Rate']:.0%}</h3>
-                <p style="margin: 8px 0; font-weight: bold; color: #2c3e50;">{champion['Group']}</p>
-                <small style="color: #7f8c8d;">{champion['Region']}</small>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown("### 🎯 Priority Target Groups")
-    st.markdown("*Demographic groups requiring urgent intervention and focused support*")
-    
-    st.markdown("""
-    <div class="demographic-showcase">
-    """, unsafe_allow_html=True)
-    
-    cols = st.columns(4)
-    for idx, priority in enumerate(priority_groups):
-        col = cols[idx % 4]
-        with col:
-            st.markdown(f"""
-            <div class="demo-card priority-card">
-                <div style="font-size: 24px; margin-bottom: 10px;">{priority['Icon']}</div>
-                <h3 style="margin: 0; color: #E74C3C; font-size: 28px;">{priority['Rate']:.0%}</h3>
-                <p style="margin: 8px 0; font-weight: bold; color: #2c3e50;">{priority['Group']}</p>
-                <small style="color: #7f8c8d;">{priority['Region']}</small>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
+        
     # Income Group Analysis
     st.markdown("### 🎯 Income Group Analysis")
     
