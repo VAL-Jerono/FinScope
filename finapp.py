@@ -823,6 +823,61 @@ if st.session_state.page == 'home':
     
     st.plotly_chart(fig_overview, use_container_width=True)
     
+       # Income Group Analysis
+    st.markdown("### 🎯 Income Group Analysis")
+    
+    fig_income = px.bar(
+        income_df,
+        x='income_group',
+        y='inclusion_rate',
+        color='inclusion_rate',
+        color_continuous_scale='Viridis',
+        text='inclusion_rate',
+        title="<b>Financial Inclusion by Income Level</b>",
+        height=400
+    )
+    
+    fig_income.update_traces(
+        texttemplate='%{text:.1%}',
+        textposition='outside',
+        textfont=dict(size=14, color='black', family='Arial Black')
+    )
+    
+    fig_income.update_layout(
+        showlegend=False,
+        xaxis_title="Income Group",
+        yaxis_title="Inclusion Rate",
+        yaxis=dict(tickformat='.0%'),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=12), 
+        title_font=dict(size=16)
+    )
+    
+    fig_income1 = px.pie(
+        income_df,
+        names='income_group',
+        values='inclusion_rate',
+        color_discrete_sequence=px.colors.sequential.Viridis,
+        title="<b>Inclusion Rate Distribution by Income Group</b>",
+        height=400
+    )   
+    fig_income1.update_traces(textposition='inside', textinfo='percent+label', textfont_size=14)
+    fig_income1.update_layout(
+        showlegend=False,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=12), 
+        title_font=dict(size=16)
+    )       
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(fig_income1, use_container_width=True)
+    with col2:          
+        st.plotly_chart(fig_income, use_container_width=True)
+
+    
+    
     # Enhanced Demographic Analysis with Regional Range Comparison
     st.markdown("### 🌍 Global Financial Inclusion: Demographic Range Analysis")
     st.markdown("*Complete range across all regions for each demographic group*")
@@ -849,6 +904,57 @@ if st.session_state.page == 'home':
         
         best_regions.append(region_names[values.index(max_val)])
         worst_regions.append(region_names[values.index(min_val)])
+
+    # Regional performance heatmap
+    st.markdown("### 🔥 Regional Performance Heatmap")
+    st.markdown("*Color-coded performance across all demographic groups by region*")
+
+    # Create heatmap data
+    heatmap_data = []
+    regions_list = ['High income', 'Europe & Central Asia (excluding high income)', 'East Asia & Pacific (excluding high income)', 'South Asia (excluding high income)', 'Latin America & Caribbean (excluding high income)', 'Middle East & North Africa (excluding high income)', 'Sub-Saharan Africa (excluding high income)']
+
+    for demo_group in demographic_groups:
+        row = []
+        for region in regions_list:
+            if region in regional_demographic_data[demo_group]:
+                row.append(regional_demographic_data[demo_group][region])
+            else:
+                row.append(None)
+        heatmap_data.append(row)
+
+    fig_heatmap = go.Figure(data=go.Heatmap(
+        z=heatmap_data,
+        x=[region.replace(' (excluding high income)', '').replace(' & ', ' &<br>') for region in regions_list],
+        y=demographic_groups,
+        colorscale='RdYlGn',
+        zmin=0,
+        zmax=1,
+        colorbar=dict(
+            title="Account<br>Ownership<br>Rate",
+            titleside="right",
+            tickmode="linear",
+            tick0=0,
+            dtick=0.2,
+            tickformat='.0%'
+        ),
+        hoverongaps=False,
+        hovertemplate="<b>%{y}</b><br>%{x}<br>Rate: %{z:.0%}<extra></extra>"
+    ))
+
+    fig_heatmap.update_layout(
+        title=dict(
+            text="<b>Regional Performance Matrix</b><br><span style='font-size:14px; color:#666'>Account ownership rates by demographic group and region</span>",
+            x=0.5,
+            font=dict(size=18)
+        ),
+        height=600,
+        font=dict(family="Arial, sans-serif", size=11),
+        margin=dict(l=150, r=100, t=80, b=100)
+    )
+
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+
+
 
     # Create range chart
     fig_range = go.Figure()
@@ -942,54 +1048,6 @@ if st.session_state.page == 'home':
 
     st.plotly_chart(fig_range, use_container_width=True)
 
-    # Regional performance heatmap
-    st.markdown("### 🔥 Regional Performance Heatmap")
-    st.markdown("*Color-coded performance across all demographic groups by region*")
-
-    # Create heatmap data
-    heatmap_data = []
-    regions_list = ['High income', 'Europe & Central Asia (excluding high income)', 'East Asia & Pacific (excluding high income)', 'South Asia (excluding high income)', 'Latin America & Caribbean (excluding high income)', 'Middle East & North Africa (excluding high income)', 'Sub-Saharan Africa (excluding high income)']
-
-    for demo_group in demographic_groups:
-        row = []
-        for region in regions_list:
-            if region in regional_demographic_data[demo_group]:
-                row.append(regional_demographic_data[demo_group][region])
-            else:
-                row.append(None)
-        heatmap_data.append(row)
-
-    fig_heatmap = go.Figure(data=go.Heatmap(
-        z=heatmap_data,
-        x=[region.replace(' (excluding high income)', '').replace(' & ', ' &<br>') for region in regions_list],
-        y=demographic_groups,
-        colorscale='RdYlGn',
-        zmin=0,
-        zmax=1,
-        colorbar=dict(
-            title="Account<br>Ownership<br>Rate",
-            titleside="right",
-            tickmode="linear",
-            tick0=0,
-            dtick=0.2,
-            tickformat='.0%'
-        ),
-        hoverongaps=False,
-        hovertemplate="<b>%{y}</b><br>%{x}<br>Rate: %{z:.0%}<extra></extra>"
-    ))
-
-    fig_heatmap.update_layout(
-        title=dict(
-            text="<b>Regional Performance Matrix</b><br><span style='font-size:14px; color:#666'>Account ownership rates by demographic group and region</span>",
-            x=0.5,
-            font=dict(size=18)
-        ),
-        height=600,
-        font=dict(family="Arial, sans-serif", size=11),
-        margin=dict(l=150, r=100, t=80, b=100)
-    )
-
-    st.plotly_chart(fig_heatmap, use_container_width=True)
 
     # Summary insights
     st.markdown("### 📊 Key Disparities Revealed")
@@ -1047,39 +1105,6 @@ if st.session_state.page == 'home':
     </div>
     """, unsafe_allow_html=True)
         
-    # Income Group Analysis
-    st.markdown("### 🎯 Income Group Analysis")
-    
-    fig_income = px.bar(
-        income_df,
-        x='income_group',
-        y='inclusion_rate',
-        color='inclusion_rate',
-        color_continuous_scale='Viridis',
-        text='inclusion_rate',
-        title="<b>Financial Inclusion by Income Level</b>",
-        height=400
-    )
-    
-    fig_income.update_traces(
-        texttemplate='%{text:.1%}',
-        textposition='outside',
-        textfont=dict(size=14, color='black', family='Arial Black')
-    )
-    
-    fig_income.update_layout(
-        showlegend=False,
-        xaxis_title="Income Group",
-        yaxis_title="Inclusion Rate",
-        yaxis=dict(tickformat='.0%'),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(size=12), 
-        title_font=dict(size=16)
-    )
-    
-    st.plotly_chart(fig_income, use_container_width=True)
-
 # Regional Analytics Page
 elif st.session_state.page == 'regional':
     st.markdown("## 🗺️ Interactive Regional Analytics")
