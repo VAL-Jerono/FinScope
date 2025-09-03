@@ -1204,19 +1204,52 @@ elif st.session_state.page == 'regional':
                         key=f"region_{idx}"):
                 st.session_state.selected_region = region_name
     
+    
+    
     # Display selected region details with enhanced recommendations
     if st.session_state.selected_region:
         region_name = st.session_state.selected_region
         region_data = regional_df[regional_df['region'] == region_name].iloc[0]
         region_info = region_mapping[region_name]
         
+        # Get priority demographics for this region
+        region_demographics = regional_demographic_data
+        priority_groups = []
+        
+        # Identify groups with lowest inclusion rates in this region
+        for demo_group, regions in region_demographics.items():
+            if region_name in regions:
+                rate = regions[region_name]
+                if rate < 0.5:  # Below 50% inclusion
+                    priority_groups.append((demo_group, rate))
+        
+        # Sort by lowest rates first
+        priority_groups.sort(key=lambda x: x[1])
+        
         st.markdown(f"""
         <div class="region-info-card" style="border-left-color: {region_info['color']};">
             <h2 style="color: {region_info['color']}; margin-top: 0;">
-                {region_name.split('(')[0].strip()} - Strategic Analysis
+                {region_name.split('(')[0].strip()} - Strategic Analysis & Priority Demographics
             </h2>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Priority Demographics Alert
+        if priority_groups:
+            st.markdown("#### 🚨 HIGHEST PRIORITY DEMOGRAPHICS")
+            st.markdown("*These groups require immediate, targeted interventions*")
+            
+            priority_cols = st.columns(min(3, len(priority_groups)))
+            for idx, (group, rate) in enumerate(priority_groups[:3]):
+                with priority_cols[idx]:
+                    st.markdown(f"""
+                    <div class="demo-card priority-card">
+                        <h4 style="color: #E74C3C; margin: 0 0 10px 0;">⚠️ CRITICAL</h4>
+                        <h3 style="margin: 0 0 5px 0;">{group}</h3>
+                        <h2 style="color: #E74C3C; margin: 5px 0;">{rate:.0%}</h2>
+                        <p style="margin: 5px 0; font-size: 12px; color: #666;">Inclusion Rate</p>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         # Key metrics
         col1, col2, col3, col4 = st.columns(4)
@@ -1232,12 +1265,156 @@ elif st.session_state.page == 'regional':
             rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
             st.metric("Global Rank", f"#{rank}/7")
         
-        # Strategic Recommendations Section
+        # Generate specific, demographic-targeted recommendations
         st.markdown(f"""
         <div class="recommendation-section" style="border-left-color: {region_info['color']};">
-            <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Strategic Recommendations by Priority</h3>
+            <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Personalized Action Plan for Priority Demographics</h3>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Create targeted recommendations based on actual demographic data
+        demographic_actions = {}
+        
+        # Generate specific actions for each priority demographic
+        for demo_group, rate in priority_groups:
+            actions = []
+            
+            if 'Women' in demo_group and rate < 0.5:
+                actions.extend([
+                    f"📱 Deploy 10,000+ female banking agents within 6 months - current women's inclusion at {rate:.0%}",
+                    f"🏦 Establish women-only banking hours (7-10 AM) in all branches to address cultural barriers",
+                    f"💳 Launch women-specific savings accounts with no minimum balance - targeting {(1-rate)*100:.0%}% gap closure",
+                    f"👥 Create female-led financial literacy circles in communities with <40% women inclusion"
+                ])
+            
+            if 'Poor' in demo_group and rate < 0.4:
+                actions.extend([
+                    f"💰 Launch $10 minimum account opening for bottom 40% income group (currently {rate:.0%})",
+                    f"📊 Deploy income-graduated fee structures - free transactions for <$2/day earners",
+                    f"🌾 Create agricultural value chain financing for 50,000+ smallholder farmers",
+                    f"💸 Offer micro-savings products with daily deposit options starting at $0.25"
+                ])
+            
+            if 'Rural' in demo_group and rate < 0.6:
+                actions.extend([
+                    f"🚐 Deploy mobile banking units to 500+ villages with <50% banking access",
+                    f"📡 Install satellite-powered banking kiosks in areas >20km from nearest branch",
+                    f"👨‍🌾 Train 5,000+ rural agents in agricultural communities within 12 months",
+                    f"☀️ Establish solar-powered payment terminals in off-grid rural areas"
+                ])
+            
+            if 'Primary Education' in demo_group and rate < 0.4:
+                actions.extend([
+                    f"📚 Launch visual/audio banking tutorials in local languages for low-literacy populations",
+                    f"🤝 Partner with adult literacy programs to integrate basic financial education",
+                    f"📱 Deploy voice-activated banking systems for non-literate users",
+                    f"👥 Create peer-to-peer learning networks in communities with <50% literacy"
+                ])
+            
+            if 'Age 15-24' in demo_group and rate < 0.5:
+                actions.extend([
+                    f"🎮 Launch gamified savings apps targeting {(1-rate)*100:.0%}% of unbanked youth",
+                    f"🎓 Partner with schools/universities for mandatory financial literacy courses",
+                    f"💼 Create youth entrepreneur loan programs with simplified documentation",
+                    f"📲 Deploy social media-based financial education campaigns in local languages"
+                ])
+            
+            if 'Out of Labor Force' in demo_group and rate < 0.5:
+                actions.extend([
+                    f"👵 Target elderly and retired populations with simplified banking products",
+                    f"🤱 Create childcare-linked savings accounts for stay-at-home parents",
+                    f"🏥 Partner with healthcare providers for health savings account integration",
+                    f"💻 Develop disability-accessible banking interfaces and services"
+                ])
+            
+            demographic_actions[demo_group] = actions[:4]  # Top 4 most relevant actions
+        
+        # Display demographic-specific action plans
+        if demographic_actions:
+            st.markdown("#### 🚀 IMMEDIATE ACTIONS BY PRIORITY DEMOGRAPHIC")
+            
+            for demo_group, actions in list(demographic_actions.items())[:3]:  # Show top 3 priority groups
+                rate = next(r for g, r in priority_groups if g == demo_group)
+                st.markdown(f"""
+                <div class="action-card immediate" style="margin: 15px 0;">
+                    <h5 style="margin: 0 0 10px 0; color: #E74C3C;">🎯 TARGET: {demo_group} ({rate:.0%} inclusion)</h5>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        {''.join(f'<li style="margin: 3px 0;">{action}</li>' for action in actions)}
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Calculate demographic impact potential
+        st.markdown("#### 📊 DEMOGRAPHIC IMPACT CALCULATOR")
+        
+        if priority_groups:
+            # Calculate potential reach for each intervention
+            impact_data = []
+            for demo_group, current_rate in priority_groups[:3]:
+                target_rate = min(current_rate + 0.25, 0.8)  # Realistic 25% improvement or 80% cap
+                potential_newly_included = (target_rate - current_rate) * region_data['count']
+                
+                impact_data.append({
+                    'Demographic': demo_group,
+                    'Current Rate': f"{current_rate:.0%}",
+                    'Target Rate': f"{target_rate:.0%}",
+                    'Potential New Users': f"{potential_newly_included:,.0f}",
+                    'Investment Priority': '🔴 HIGH' if current_rate < 0.3 else '🟡 MEDIUM'
+                })
+            
+            impact_df = pd.DataFrame(impact_data)
+            st.dataframe(impact_df, use_container_width=True, hide_index=True)
+        
+        # Resource allocation calculator
+        st.markdown("#### 💰 TARGETED BUDGET ALLOCATION")
+        
+        total_unbanked = region_data['count'] * (1 - region_data['inclusion_rate'])
+        
+        if priority_groups:
+            allocation_data = []
+            
+            for demo_group, rate in priority_groups[:4]:
+                # Estimate demographic size as proportion of total unbanked
+                if 'Women' in demo_group:
+                    demo_unbanked = total_unbanked * 0.52  # Approx 52% women globally
+                elif 'Rural' in demo_group:
+                    demo_unbanked = total_unbanked * 0.6   # Approx 60% rural in developing regions
+                elif 'Poor' in demo_group:
+                    demo_unbanked = total_unbanked * 0.4   # Bottom 40%
+                elif 'Youth' in demo_group:
+                    demo_unbanked = total_unbanked * 0.25  # Approx 25% youth
+                else:
+                    demo_unbanked = total_unbanked * 0.3   # Default estimate
+                
+                # Calculate cost per inclusion (varies by demographic complexity)
+                if rate < 0.3:
+                    cost_per_person = 50  # High-touch interventions needed
+                elif rate < 0.5:
+                    cost_per_person = 30  # Moderate interventions
+                else:
+                    cost_per_person = 20  # Standard interventions
+                
+                total_investment = demo_unbanked * cost_per_person
+                
+                allocation_data.append({
+                    'Priority Group': demo_group,
+                    'Unbanked Population': f"{demo_unbanked:,.0f}",
+                    'Cost per Person': f"${cost_per_person}",
+                    'Total Investment': f"${total_investment:,.0f}",
+                    'Expected Timeline': '18-36 months'
+                })
+            
+            allocation_df = pd.DataFrame(allocation_data)
+            st.dataframe(allocation_df, use_container_width=True, hide_index=True)
+            
+            total_investment = sum(float(row['Total Investment'].replace('$', '').replace(',', '')) for _, row in allocation_df.iterrows())
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #E74C3C, #C0392B); padding: 15px; border-radius: 10px; color: white; margin: 15px 0;">
+                <h4 style="margin: 0; color: white;">💡 TOTAL PRIORITY INVESTMENT NEEDED</h4>
+                <h2 style="margin: 10px 0; color: white;">${total_investment:,.0f}</h2>
+                <p style="margin: 0;">To target the most excluded demographics with evidence-based interventions</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         # Action Timeline
         col1, col2, col3 = st.columns(3)
@@ -1307,6 +1484,117 @@ elif st.session_state.page == 'regional':
             st.markdown("#### 🚀 Growth Opportunities")
             for opportunity in region_info['opportunities']:
                 st.markdown(f"• {opportunity}")
+    
+    
+    # # Display selected region details with enhanced recommendations
+    # if st.session_state.selected_region:
+    #     region_name = st.session_state.selected_region
+    #     region_data = regional_df[regional_df['region'] == region_name].iloc[0]
+    #     region_info = region_mapping[region_name]
+        
+    #     st.markdown(f"""
+    #     <div class="region-info-card" style="border-left-color: {region_info['color']};">
+    #         <h2 style="color: {region_info['color']}; margin-top: 0;">
+    #             {region_name.split('(')[0].strip()} - Strategic Analysis
+    #         </h2>
+    #     </div>
+    #     """, unsafe_allow_html=True)
+        
+    #     # Key metrics
+    #     col1, col2, col3, col4 = st.columns(4)
+        
+    #     with col1:
+    #         st.metric("Inclusion Rate", f"{region_data['inclusion_rate']:.1%}")
+    #     with col2:
+    #         st.metric("Sample Size", f"{region_data['count']:,}")
+    #     with col3:
+    #         gap_to_best = regional_df['inclusion_rate'].max() - region_data['inclusion_rate']
+    #         st.metric("Gap to Best", f"{gap_to_best:.1%}")
+    #     with col4:
+    #         rank = (regional_df['inclusion_rate'] > region_data['inclusion_rate']).sum() + 1
+    #         st.metric("Global Rank", f"#{rank}/7")
+        
+    #     # Strategic Recommendations Section
+    #     st.markdown(f"""
+    #     <div class="recommendation-section" style="border-left-color: {region_info['color']};">
+    #         <h3 style="color: {region_info['color']}; margin-top: 0;">🎯 Strategic Recommendations by Priority</h3>
+    #     </div>
+    #     """, unsafe_allow_html=True)
+        
+    #     # Action Timeline
+    #     col1, col2, col3 = st.columns(3)
+        
+    #     with col1:
+    #         st.markdown("#### 🚀 Immediate Actions (0-12 months)")
+    #         for action in region_info['immediate_actions']:
+    #             st.markdown(f"""
+    #             <div class="action-card immediate">
+    #                 <h5 style="margin: 0 0 10px 0; color: #E74C3C;">⚡ Priority Action</h5>
+    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
+    #             </div>
+    #             """, unsafe_allow_html=True)
+        
+    #     with col2:
+    #         st.markdown("#### 🔄 Medium-term (1-3 years)")
+    #         for action in region_info['medium_term']:
+    #             st.markdown(f"""
+    #             <div class="action-card medium-term">
+    #                 <h5 style="margin: 0 0 10px 0; color: #F39C12;">🔧 Strategic Initiative</h5>
+    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
+    #             </div>
+    #             """, unsafe_allow_html=True)
+        
+    #     with col3:
+    #         st.markdown("#### 🌟 Long-term Vision (3-10 years)")
+    #         for action in region_info['long_term']:
+    #             st.markdown(f"""
+    #             <div class="action-card long-term">
+    #                 <h5 style="margin: 0 0 10px 0; color: #27AE60;">🎯 Transformation Goal</h5>
+    #                 <p style="margin: 0; font-size: 14px;">{action}</p>
+    #             </div>
+    #             """, unsafe_allow_html=True)
+        
+    #     # KPIs and Budget Allocation
+    #     col1, col2 = st.columns(2)
+        
+    #     with col1:
+    #         st.markdown(f"""
+    #         <div class="kpi-section">
+    #             <h4 style="margin-top: 0;">📊 Success Metrics & KPIs</h4>
+    #             <ul style="margin: 10px 0; padding-left: 20px;">
+    #                 {''.join(f'<li style="margin: 5px 0;">{metric}</li>' for metric in region_info['success_metrics'])}
+    #             </ul>
+    #         </div>
+    #         """, unsafe_allow_html=True)
+        
+    #     with col2:
+    #         st.markdown(f"""
+    #         <div class="kpi-section">
+    #             <h4 style="margin-top: 0;">💰 Recommended Budget Allocation</h4>
+    #             <ul style="margin: 10px 0; padding-left: 20px;">
+    #                 {''.join(f'<li style="margin: 5px 0;"><strong>{area}:</strong> {percentage}</li>' for area, percentage in region_info['budget_allocation'].items())}
+    #             </ul>
+    #         </div>
+    #         """, unsafe_allow_html=True)
+        
+    #     # Challenges and Opportunities
+    #     col1, col2 = st.columns(2)
+        
+    #     with col1:
+    #         st.markdown("#### 🚧 Key Challenges")
+    #         for challenge in region_info['key_challenges']:
+    #             st.markdown(f"• {challenge}")
+        
+    #     with col2:
+    #         st.markdown("#### 🚀 Growth Opportunities")
+    #         for opportunity in region_info['opportunities']:
+    #             st.markdown(f"• {opportunity}")
+                
+
+
+
+
+
 
 # Individual Analysis Mode
 elif st.session_state.page == 'individual':
