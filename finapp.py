@@ -922,6 +922,8 @@ if st.session_state.page == 'home':
                 row.append(None)
         heatmap_data.append(row)
 
+
+
     fig_heatmap = go.Figure(data=go.Heatmap(
         z=heatmap_data,
         x=[region.replace(' (excluding high income)', '').replace(' & ', ' &<br>') for region in regions_list],
@@ -931,7 +933,6 @@ if st.session_state.page == 'home':
         zmax=1,
         colorbar=dict(
             title="Account<br>Ownership<br>Rate",
-            titleside="right",
             tickmode="linear",
             tick0=0,
             dtick=0.2,
