@@ -1327,7 +1327,7 @@ if st.session_state.selected_region:
                 actions.extend([
                     f"📱 Deploy 10,000+ female banking agents within 6 months - current women's inclusion at {rate:.0%}",
                     f"🏦 Establish women-only banking hours (7-10 AM) in all branches to address cultural barriers",
-                    f"💳 Launch women-specific savings accounts with no minimum balance - targeting {1-rate:.0%}% gap closure",
+                    f"💳 Launch women-specific savings accounts with no minimum balance - targeting {rate:.0%}% gap closure",
                     f"👥 Create female-led financial literacy circles in communities with <40% women inclusion"
                 ])
             
@@ -1357,7 +1357,7 @@ if st.session_state.selected_region:
             
             if 'Age 15-24' in demo_group and rate < 0.5:
                 actions.extend([
-                    f"🎮 Launch gamified savings apps targeting {(1-rate):.0%}% of unbanked youth",
+                    f"🎮 Launch gamified savings apps targeting {rate:.0%}% of unbanked youth",
                     f"🎓 Partner with schools/universities for mandatory financial literacy courses",
                     f"💼 Create youth entrepreneur loan programs with simplified documentation",
                     f"📲 Deploy social media-based financial education campaigns in local languages"
