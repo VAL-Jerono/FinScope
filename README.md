@@ -6,19 +6,45 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Abstract
+## What's up?
 
-This study leverages the **Global Findex 2024 dataset** to address one of the world's most pressing development challenges: financial exclusion. Using a dataset of **8,476 individuals** and 24 engineered features, we developed a machine learning pipeline to predict account ownership with exceptional accuracy.
+Nearly **1.3 billion adults worldwide** still lack a financial account — locking them out of savings, credit, insurance, and even basic resilience in times of crisis. Traditional outreach programs are often **broad** 
 
-Among the models tested, the **Random Forest classifier emerged as the strongest performer**, achieving **89.6% accuracy**, **AUC-ROC of 0.9607**, and **AUC-PR of 0.9743**. The model demonstrated excellent calibration, reaching **97% accuracy on medium-confidence predictions** and **98%+ accuracy on high-confidence predictions**, making it highly reliable for targeted outreach strategies.
+**FinScope Global** changes this by combining **World Bank microdata** with **machine learning** to predict *who is likely to remain unbanked* and *why*. The result is a **policy-ready dashboard** where NGOs, governments, researchers, and fintechs can:
 
-Feature importance analysis revealed that **business loan access, emergency funds, and digital payment adoption** are the strongest predictors of account ownership. This finding underscores that **entrepreneurship, financial resilience, and digital infrastructure** are critical gateways to inclusion.
+- Identify excluded populations with precision
+- Understand the key barriers (loans, savings, digital access, etc.)
+- Design **targeted, cost-effective interventions**
+
+Instead of casting a wide net, FinScope enables **surgical, data-driven outreach**.
 
 **Live Application**: [finscopee.streamlit.app](https://finscopee.streamlit.app/)
 
+## The Problem
+
+- **1 in 4 adults globally** still lacks access to financial services
+- Gaps persist by **gender, income, education, and geography**
+- Outreach budgets are **finite**, making it impossible to reach everyone equally
+- Without precision targeting, inclusion efforts risk **leaving the most vulnerable behind**
+
+---
+
+## How It Works (Simple)
+
+1. **Data Source**: The **Global Findex 2024 dataset**, covering 149 economies and 300+ indicators.
+2. **Feature Engineering**: We focus on 24 meaningful variables like access to loans, savings behavior, digital payments, and emergency funds.
+3. **Modeling**: Several models were tested — **Random Forest** performed best, predicting account ownership with **89.6% accuracy** and excellent calibration.
+4. **Dashboard**: Through a web app, users can:
+    - Enter individual or group profiles
+    - Get predicted exclusion probabilities
+    - See the **top reasons driving exclusion**
+    - Explore country and regional insights
+
+It’s not just a prediction model — it’s a **decision support tool**.
+
+
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [Dataset & Methodology](#dataset--methodology)
 - [Model Performance](#model-performance)
 - [Key Findings](#key-findings)
@@ -31,9 +57,7 @@ Feature importance analysis revealed that **business loan access, emergency fund
 - [Contributing](#contributing)
 - [License](#license)
 
-## Introduction
 
-Across the globe, **1.4 billion adults remain without a financial account**. The absence of this basic entry point to savings, payments, credit, and insurance doesn't simply reflect inequality—it reinforces it. For policymakers, development practitioners, and financial institutions, the question is no longer *whether* financial inclusion matters, but rather: *who* remains excluded, *where* they are, and *how* outreach can be designed to reach them effectively.
 
 This project addresses that challenge head-on by:
 
@@ -49,6 +73,7 @@ This project addresses that challenge head-on by:
 - **8,476 individuals** across 149 countries
 - **24 engineered features** covering demographics, financial behavior, and access patterns
 - **7 regional classifications** from High Income to Sub-Saharan Africa
+
 
 ### Feature Engineering
 Our analysis incorporates comprehensive feature engineering across multiple domains:
@@ -239,7 +264,7 @@ finscope-global/
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/yourusername/finscope-global.git
+git clone https://github.com/VAL-Jerono/FinScope.git
 cd finscope-global
 ```
 
