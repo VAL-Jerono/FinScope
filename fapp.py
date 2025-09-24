@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import pickle
-import os
 from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
@@ -25,6 +23,30 @@ st.set_page_config(
 # Enhanced custom CSS
 st.markdown("""
 <style>
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #000000;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+    }
+    
+    [data-theme="dark"] {
+        --bg-color: #0e1117;
+        --text-color: #ffffff;
+        --card-bg: #262730;
+        --border-color: #404040;
+    }
+    
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 30px;
@@ -709,21 +731,164 @@ def load_data():
     return pd.DataFrame(regional_data), pd.DataFrame(income_data), pd.DataFrame(feature_importance), region_mapping, country_mapping, regional_demographic_data
 
 @st.cache_resource
-def load_model():
-    """Load the trained Random Forest model"""
+def load_models():
+    """Try to load models, fallback gracefully if not available"""
     try:
-        # Replace this line with your actual model file path
-        model = pickle.load(open('finance_app.pkl', 'rb'))
-        return model
-    except FileNotFoundError:
-        st.error("⚠️ Model file 'finance_app.pkl' not found. Using fallback calculation method.")
-        return None
+        regression_model = joblib.load('models/xgboost_regression_model.pkl')
+        classification_model = joblib.load('models/lightgbm_classification_model.pkl')
+        feature_names = joblib.load('models/feature_names.pkl')
+        return regression_model, classification_model, feature_names, True
+    except:
+        return None, None, None, False
+
+def calculate_inclusion_score(inputs, region, income_group, models_loaded, regression_model, feature_names):
+    """Calculate inclusion score using ML model if available, fallback to weighted calculation"""
+    
+    if models_loaded and regression_model is not None:
+        try:
+            # Map simplified inputs to full feature vector
+            # Create feature vector with defaults and update with user inputs
+            feature_vector = np.zeros(len(feature_names))
+            
+            # Map user inputs to corresponding model features
+            feature_mapping = {
+                'business_credit': ['business_loan_source', 'current_business_loans', 'credit_card_access', 'any_borrowing'],
+                'digital_payments': ['mobile_money_transfers', 'digital_payment_usage', 'digital_payment_account', 'mobile_payment_services'],
+                'active_savings': ['active_savings', 'savings_for_purchases', 'retirement_savings'],
+                'mobile_banking': ['prefer_digital_finance', 'prefer_digital_accounts'],
+                'emergency_funds': ['emergency_funds_available']
+            }
+            
+            # Set feature values based on user inputs
+            for input_key, feature_list in feature_mapping.items():
+                user_value = inputs[input_key]
+                for feature in feature_list:
+                    if feature in feature_names:
+                        idx = feature_names.index(feature)
+                        feature_vector[idx] = user_value
+            
+            # Add regional and income encoding if features exist
+            for i, feature in enumerate(feature_names):
+                if region.lower().replace(' ', '_') in feature.lower():
+                    feature_vector[i] = 1.0
+                if income_group.lower().replace(' ', '_') in feature.lower():
+                    feature_vector[i] = 1.0
+            
+            # Get model prediction
+            prediction = regression_model.predict([feature_vector])[0]
+            
+            # Ensure prediction is in valid range
+            final_score = max(0.05, min(0.95, prediction))
+            
+            return final_score
+            
+        except Exception as e:
+            st.warning(f"Model prediction failed, using fallback calculation: {str(e)}")
+    
+    # Fallback calculation if model not available
+    feature_weights = [0.6309, 0.5714, 0.4500, 0.5430, 0.4500]
+    
+    normalized_inputs = [
+        inputs['business_credit'],
+        inputs['digital_payments'],
+        inputs['active_savings'],
+        inputs['mobile_banking'],
+        inputs['emergency_funds']
+    ]
+    
+    weighted_score = sum(v * w for v, w in zip(normalized_inputs, feature_weights))
+    base_score = weighted_score / sum(feature_weights)
+    
+    # Regional baseline adjustments
+    regional_baselines = {
+        'High income': 0.858,
+        'East Asia & Pacific (excluding high income)': 0.568,
+        'Europe & Central Asia (excluding high income)': 0.554,
+        'South Asia (excluding high income)': 0.483,
+        'Latin America & Caribbean (excluding high income)': 0.480,
+        'Sub-Saharan Africa (excluding high income)': 0.427,
+        'Middle East & North Africa (excluding high income)': 0.382
+    }
+    
+    income_multipliers = {
+        'High income': 1.1,
+        'Upper middle income': 1.0,
+        'Lower middle income': 0.9,
+        'Low income': 0.8
+    }
+    
+    regional_baseline = regional_baselines[region]
+    income_multiplier = income_multipliers[income_group]
+    
+    final_score = (base_score * 0.7) + (regional_baseline * 0.3)
+    final_score *= income_multiplier
+    
+    final_score = max(0.05, min(0.95, final_score))
+    
+    return final_score
+
+def get_personalized_recommendations(score, inputs, region):
+    """Generate personalized recommendations based on user profile"""
+    recommendations = []
+    
+    # Business credit recommendations
+    if inputs['business_credit'] < 0.3:
+        recommendations.append({
+            'title': '🏢 Build Business Credit History',
+            'description': 'Start with microfinance or community lending programs',
+            'priority': 'high'
+        })
+    
+    # Digital payments
+    if inputs['digital_payments'] < 0.4:
+        recommendations.append({
+            'title': '📱 Adopt Mobile Payment Solutions',
+            'description': 'Begin with popular apps in your region for daily transactions',
+            'priority': 'high'
+        })
+    
+    # Savings behavior
+    if inputs['active_savings'] < 0.5:
+        recommendations.append({
+            'title': '💰 Establish Regular Savings Habit',
+            'description': 'Start small with automatic transfers or mobile savings apps',
+            'priority': 'medium'
+        })
+    
+    # Mobile banking
+    if inputs['mobile_banking'] < 0.4:
+        recommendations.append({
+            'title': '🏦 Open Digital Banking Account',
+            'description': 'Choose a bank with strong mobile features and low fees',
+            'priority': 'high'
+        })
+    
+    # Emergency funds
+    if inputs['emergency_funds'] < 0.6:
+        recommendations.append({
+            'title': '🛡️ Build Emergency Fund',
+            'description': 'Aim for 3-6 months of expenses in accessible savings',
+            'priority': 'medium'
+        })
+    
+    # Region-specific recommendations
+    if region == 'Sub-Saharan Africa (excluding high income)':
+        recommendations.append({
+            'title': '📞 Leverage Mobile Money Services',
+            'description': 'Use M-Pesa, MTN Mobile Money, or similar platforms',
+            'priority': 'high'
+        })
+    elif region == 'South Asia (excluding high income)':
+        recommendations.append({
+            'title': '🆔 Utilize Digital Identity Systems',
+            'description': 'Use Aadhaar or similar systems for easy account opening',
+            'priority': 'medium'
+        })
+    
+    return recommendations[:4]  # Return top 4 recommendations
 
 
-
-
-
-
+# Streamlit App
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -1563,519 +1728,286 @@ if st.session_state.selected_region:
         st.markdown("#### 🚀 Growth Opportunities")
         for opportunity in region_info['opportunities']:
             st.markdown(f"• {opportunity}")
-          
-          
-          
-# Individual Analysis Mode - OPTIMIZED VERSION
+  
+# Individual Analysis Page (Simplified)
 elif st.session_state.page == 'individual':
-    st.markdown("## 🤖 AI-Powered Financial Inclusion Predictor")
-    st.markdown("*Powered by LightGBM with 91.3% accuracy and 97.6% AUC*")
+    st.markdown("## 👤 Personal Financial Inclusion Assessment")
     
-    @st.cache_resource
-    def load_optimized_model():
-        """Load the top 10 features optimized model"""
-        model_path = 'optimized_financial_inclusion_model.pkl'
-        
-        if os.path.exists(model_path):
-            try:
-                with open(model_path, 'rb') as f:
-                    model_package = pickle.load(f)
-                st.success(f"✅ Optimized model loaded successfully")
-                return model_package
-            except Exception as e:
-                st.error(f"Error loading model: {str(e)}")
-                return None
-        else:
-            st.warning("⚠️ Optimized model not found. Please train and save the model first.")
-            return None
+    if models_loaded:
+        st.markdown("*🤖 **AI-Powered Prediction**: Using XGBoost ML model (88.5% R²) for precise analysis*")
+    else:
+        st.markdown("*📊 **Statistical Analysis**: Answer 5 simple questions for personalized insights*")
     
-    def make_optimized_prediction(model_package, input_data):
-        """Make prediction using the optimized model package"""
-        if model_package is None:
-            return calculate_fallback_prediction(input_data)
-        
-        try:
-            # Extract components
-            model = model_package['model']
-            model_name = model_package['model_name']
-            scalers = model_package.get('scalers', {})
-            encoders = model_package.get('encoders', {})
-            demo_mappings = model_package.get('demo_mappings', {})
-            top_features = model_package['top_features']
-            
-            # Prepare feature array
-            feature_values = []
-            for feature in top_features:
-                value = input_data[feature]
-                
-                # Handle categorical encoding
-                if feature == 'demo_subgroup' and isinstance(value, str):
-                    value = demo_mappings.get(value, 0)
-                elif feature in encoders:
-                    try:
-                        value = encoders[feature].transform([str(value)])[0]
-                    except ValueError:
-                        value = 0  # Default for unseen categories
-                
-                feature_values.append(value)
-            
-            feature_array = np.array([feature_values])
-            
-            # Apply scaling if needed
-            if model_name == 'LinearRegression' and 'standard' in scalers:
-                feature_array = scalers['standard'].transform(feature_array)
-            
-            # Make prediction
-            prediction = model.predict(feature_array)[0]
-            prediction = np.clip(prediction, 0, 1)
-            
-            # Calculate additional metrics
-            confidence = max(prediction, 1-prediction)
-            
-            # Determine risk level
-            if prediction >= 0.7:
-                risk_level = "LOW"
-                segment = "Financially Included"
-                recommendation = "Maintain engagement and explore advanced products"
-            elif prediction >= 0.5:
-                risk_level = "MEDIUM"
-                segment = "Moderate Access"
-                recommendation = "Targeted interventions to improve access"
-            else:
-                risk_level = "HIGH"
-                segment = "Financially Excluded" 
-                recommendation = "Priority interventions needed immediately"
-            
-            return {
-                'probability': prediction,
-                'risk_level': risk_level,
-                'segment': segment,
-                'recommendation': recommendation,
-                'confidence': confidence,
-                'model_used': model_name
-            }
-        
-        except Exception as e:
-            st.error(f"Model prediction failed: {str(e)}")
-            return calculate_fallback_prediction(input_data)
-
-    def calculate_fallback_prediction(input_data):
-        """Fallback prediction using feature weights"""
-        # Feature weights from analysis
-        weights = {
-            'biz_loan_source': 321,
-            'saved_any': 313,
-            'borrowed_any': 285,
-            'income_digital_interaction': 260,
-            'biz_loan': 254,
-            'demo_subgroup': 214,
-            'saved_for_purchase': 198,
-            'region_cleaned': 182,
-            'financial_activity_score': 167,
-            'saved_no_purpose': 138
-        }
-        
-        # Calculate weighted score
-        total_weight = sum(weights.values())
-        weighted_score = 0
-        
-        for feature, weight in weights.items():
-            if feature in input_data:
-                value = input_data[feature]
-                # Handle categorical features
-                if feature == 'demo_subgroup':
-                    # Simple mapping for demo groups
-                    demo_values = {'poorest 40%': 0.3, 'rural': 0.4, 'female': 0.45, 
-                                  'richest 60%': 0.7, 'urban': 0.6, 'male': 0.55}
-                    value = demo_values.get(value, 0.5)
-                elif feature == 'region_cleaned':
-                    # Regional baseline values
-                    regional_values = [0.882, 0.564, 0.557, 0.440, 0.496, 0.394, 0.378]
-                    value = regional_values[int(value)] if isinstance(value, (int, float)) else 0.5
-                
-                weighted_score += value * weight
-        
-        # Normalize to probability
-        probability = weighted_score / total_weight
-        probability = np.clip(probability, 0.01, 0.99)
-        
-        # Determine risk level
-        if probability >= 0.7:
-            risk_level = "LOW"
-            segment = "Financially Included"
-            recommendation = "Maintain engagement and explore advanced products"
-        elif probability >= 0.5:
-            risk_level = "MEDIUM"
-            segment = "Moderate Access"
-            recommendation = "Targeted interventions to improve access"
+    # Show model status prominently
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown("### 📝 Quick Assessment (5 Questions)")
+    with col2:
+        if models_loaded:
+            st.success("🤖 ML Model Active")
         else:
-            risk_level = "HIGH"
-            segment = "Financially Excluded"
-            recommendation = "Priority interventions needed immediately"
+            st.warning("📊 Fallback Mode")
+    
+    # Simplified input form with just 5 key questions
+    with st.form("simplified_assessment"):
         
-        return {
-            'probability': probability,
-            'risk_level': risk_level,
-            'segment': segment,
-            'recommendation': recommendation,
-            'confidence': max(probability, 1-probability),
-            'model_used': 'Fallback (Weighted)'
-        }
-
-    def display_enhanced_results(result, input_data, region, demo_subgroup):
-        """Display enhanced prediction results with business insights"""
-        
-        st.markdown("---")
-        st.markdown("## 🎯 AI Prediction Results")
-        
-        # Main prediction display
-        col1, col2, col3 = st.columns(3)
-        
-        probability = result['probability']
+        col1, col2 = st.columns(2)
         
         with col1:
-            if probability >= 0.7:
-                st.success(f"**HIGH LIKELIHOOD**\n\n{probability:.1%}\n\nAccount Ownership")
-            elif probability >= 0.5:
-                st.warning(f"**MEDIUM LIKELIHOOD**\n\n{probability:.1%}\n\nAccount Ownership")
-            else:
-                st.error(f"**LOW LIKELIHOOD**\n\n{probability:.1%}\n\nAccount Ownership")
-        
+            st.markdown("**📍 Location & Income**")
+            region = st.selectbox("Your Region", [
+                'High income',
+                'East Asia & Pacific (excluding high income)',
+                'Europe & Central Asia (excluding high income)',
+                'South Asia (excluding high income)',
+                'Latin America & Caribbean (excluding high income)',
+                'Sub-Saharan Africa (excluding high income)',
+                'Middle East & North Africa (excluding high income)'
+            ], help="Select your geographic region")
+            
+            income_group = st.selectbox("Income Level", [
+                'High income', 'Upper middle income', 'Lower middle income', 'Low income'
+            ], help="Choose your income bracket")
+            
+            st.markdown("**🏢 Credit & Business**")
+            business_credit = st.slider("Business/Credit Access", 1, 10, 5,
+                                      help="How easily can you get loans or credit?") / 10.0
+            
         with col2:
-            # Risk segmentation
-            risk_populations = {"LOW": "40.2%", "MEDIUM": "44.5%", "HIGH": "15.3%"}
-            risk_color = {"LOW": "success", "MEDIUM": "warning", "HIGH": "error"}
+            st.markdown("**📱 Digital Banking**")
+            digital_payments = st.slider("Digital Payment Usage", 1, 10, 5,
+                                        help="How often do you use mobile/online payments?") / 10.0
             
-            getattr(st, risk_color[result['risk_level']])(
-                f"**{result['risk_level']} RISK**\n\n{risk_populations[result['risk_level']]} of population\n\nRisk Segment"
-            )
-        
-        with col3:
-            st.info(f"**MODEL CONFIDENCE**\n\n{result['confidence']:.1%}\n\nPrediction Certainty")
-        
-        # Feature contribution analysis for top 10 features
-        st.markdown("### 📊 Top 10 Feature Impact Analysis")
-        
-        feature_data = []
-        feature_weights = {
-            'biz_loan_source': 321, 'saved_any': 313, 'borrowed_any': 285,
-            'income_digital_interaction': 260, 'biz_loan': 254, 'demo_subgroup': 214,
-            'saved_for_purchase': 198, 'region_cleaned': 182, 'financial_activity_score': 167,
-            'saved_no_purpose': 138
-        }
-        
-        total_weight = sum(feature_weights.values())
-        
-        for feature, weight in feature_weights.items():
-            if feature in input_data:
-                value = input_data[feature]
-                # Handle categorical display
-                if feature == 'demo_subgroup':
-                    display_value = f"{value} (categorical)"
-                elif feature == 'region_cleaned':
-                    region_names = ["High income", "East Asia & Pacific", "Europe & Central Asia",
-                                  "South Asia", "Latin America & Caribbean", 
-                                  "Sub-Saharan Africa", "Middle East & North Africa"]
-                    display_value = f"{region_names[int(value)]}"
-                else:
-                    display_value = f"{value:.2f}"
-                
-                contribution = (value * weight / total_weight) if isinstance(value, (int, float)) else 0.1
-                
-                feature_data.append({
-                    'Feature': feature.replace('_', ' ').title(),
-                    'Your Value': display_value,
-                    'Weight': weight,
-                    'Contribution': contribution
-                })
-        
-        # Create visualization
-        df_features = pd.DataFrame(feature_data)
-        fig = px.bar(
-            df_features,
-            x='Contribution',
-            y='Feature',
-            title="Your Top 10 Feature Contributions to Prediction",
-            orientation='h',
-            color='Contribution',
-            color_continuous_scale='RdYlGn'
-        )
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Business recommendations
-        st.markdown("### 💡 Personalized Action Plan")
-        
-        if result['risk_level'] == "HIGH":
-            st.markdown("#### 🚨 High Priority Interventions")
-            st.error("**Immediate Actions Needed**")
-            if input_data.get('biz_loan_source', 0) < 0.3:
-                st.write("• 🏢 Connect with microfinance institutions for business credit access")
-            if input_data.get('saved_any', 0) < 0.4:
-                st.write("• 💰 Enroll in structured savings programs with local banks")
-            if input_data.get('borrowed_any', 0) < 0.3:
-                st.write("• 📈 Join community credit groups to build financial history")
+            mobile_banking = st.slider("Mobile Banking Activity", 1, 10, 5,
+                                     help="How actively do you use banking apps?") / 10.0
             
-        elif result['risk_level'] == "MEDIUM":
-            st.markdown("#### ⚠️ Growth Opportunities")  
-            st.warning("**Strategic Improvements**")
-            if input_data.get('biz_loan_source', 0) < 0.5:
-                st.write("• 🏢 Explore business development bank partnerships")
-            if input_data.get('saved_any', 0) < 0.6:
-                st.write("• 💰 Consider higher-yield savings products")
+            st.markdown("**💰 Savings & Emergency**")
+            active_savings = st.slider("Regular Savings", 1, 10, 5,
+                                     help="How consistently do you save money?") / 10.0
             
-        else:
-            st.markdown("#### 🌟 Optimization Strategies")
-            st.success("**Excellence Maintenance**")
-            st.write("• 📊 Consider advanced financial products like investments")
-            st.write("• 🌐 Explore digital banking innovations")
+            emergency_funds = st.slider("Emergency Preparedness", 1, 10, 5,
+                                      help="Do you have funds for emergencies?") / 10.0
         
-        # Model information
-        st.markdown("### 🔬 Model Information")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("Model Used", result.get('model_used', 'Optimized'), "Top 10 Features")
-        with col2:
-            st.metric("Features Analyzed", "10", "Most Important")
-        with col3:
-            st.metric("Global Training Data", "8,476", "Individuals")
-
-    model_package = load_optimized_model()
+        submitted = st.form_submit_button("🤖 Get AI Analysis", 
+                                        type="primary", use_container_width=True)
     
-    # Display enhanced model metrics
-    col1, col2, col3, col4 = st.columns(4)
-    
-    if model_package:
-        metadata = model_package.get('metadata', {})
-        with col1:
-            st.metric("Model", model_package.get('model_name', 'LightGBM'), "Optimized")
-        with col2:
-            st.metric("Features", "10", "Top Predictors")
-        with col3:
-            st.metric("Accuracy", "91.3%", "Validated")
-        with col4:
-            st.metric("AUC Score", "97.6%", "Excellent")
-    
-    # Enhanced form with ONLY top 10 features
-    with st.form("optimized_prediction_form"):
-        st.markdown("### 📋 Financial Inclusion Assessment")
-        st.markdown("*Using the 10 most predictive features from global analysis*")
-        
-        # Organize top 10 features in tabs
-        financial_tab, demographics_tab, composite_tab = st.tabs([
-            "💰 Financial Services", "🌍 Demographics", "📊 Composite Scores"
-        ])
-        
-        # FINANCIAL SERVICES (Top 5 features)
-        with financial_tab:
-            st.markdown("#### 🏆 Core Financial Indicators")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**Access to Credit**")
-                biz_loan_source = st.slider(
-                    "Business Loan Source Access", 
-                    0.0, 1.0, 0.2, 0.05,
-                    help="🥇 #1 most important feature (Weight: 321)"
-                )
-                
-                biz_loan = st.slider(
-                    "Current Business Loans", 
-                    0.0, min(1.0, biz_loan_source), 0.0, 0.05,
-                    help="🥈 #5 most important feature (Weight: 254)"
-                )
-                
-                borrowed_any = st.slider(
-                    "Any Borrowing Activity", 
-                    0.0, 1.0, 0.3, 0.05,
-                    help="🥉 #3 most important feature (Weight: 285)"
-                )
-            
-            with col2:
-                st.markdown("**Savings Behavior**")
-                saved_any = st.slider(
-                    "Active Savings", 
-                    0.0, 1.0, 0.5, 0.05,
-                    help="🥈 #2 most important feature (Weight: 313)"
-                )
-                
-                saved_for_purchase = st.slider(
-                    "Savings for Purchases", 
-                    0.0, min(1.0, saved_any), 0.2, 0.05,
-                    help="🏅 #7 most important feature (Weight: 198)"
-                )
-                
-                saved_no_purpose = st.slider(
-                    "General Savings", 
-                    0.0, 1.0, 0.2, 0.05,
-                    help="🏅 #10 most important feature (Weight: 138)"
-                )
-            
-            # Real-time impact preview
-            st.markdown("**Current Financial Profile Strength**")
-            financial_strength = (biz_loan_source + saved_any + borrowed_any + biz_loan) / 4
-            if financial_strength > 0.6:
-                st.success(f"Strong Financial Profile: {financial_strength:.1%}")
-            elif financial_strength > 0.3:
-                st.warning(f"Moderate Financial Profile: {financial_strength:.1%}")
-            else:
-                st.error(f"Limited Financial Profile: {financial_strength:.1%}")
-        
-        # DEMOGRAPHICS (2 features)
-        with demographics_tab:
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**Geographic Context**")
-                region_cleaned = st.selectbox(
-                    "Region",
-                    options=[0, 1, 2, 3, 4, 5, 6],
-                    index=1,
-                    format_func=lambda x: [
-                        "High income", "East Asia & Pacific", "Europe & Central Asia",
-                        "South Asia", "Latin America & Caribbean", 
-                        "Sub-Saharan Africa", "Middle East & North Africa"
-                    ][x],
-                    help="🏅 #8 most important feature (Weight: 182)"
-                )
-                
-                # Regional context
-                regional_rates = [0.882, 0.564, 0.557, 0.440, 0.496, 0.394, 0.378]
-                regional_names = [
-                    "High income", "East Asia & Pacific", "Europe & Central Asia",
-                    "South Asia", "Latin America & Caribbean", 
-                    "Sub-Saharan Africa", "Middle East & North Africa"
-                ]
-                
-                selected_rate = regional_rates[region_cleaned]
-                st.info(f"**{regional_names[region_cleaned]}**\n\n"
-                       f"Average inclusion rate: {selected_rate:.1%}")
-            
-            with col2:
-                st.markdown("**Demographic Profile**")
-                demo_subgroup = st.selectbox(
-                    "Demographic Subgroup",
-                    options=['all', 'male', 'female', 'urban', 'rural', 'young', 'adult', 
-                            'ages 15-24', 'men', 'women', 'in laborforce', 'out of laborforce',
-                            'richest 60%', 'poorest 40%', 'secondary edu or more', 'prim edu or less'],
-                    index=6,  # 'adult' as default
-                    help="🏅 #6 most important demographic (Weight: 214)"
-                )
-                
-                # Demographic insights
-                high_inclusion_groups = ['richest 60%', 'secondary edu or more', 'urban', 'in laborforce']
-                if demo_subgroup in high_inclusion_groups:
-                    st.success("Higher inclusion probability group")
-                else:
-                    st.warning("May face inclusion barriers")
-        
-        # COMPOSITE SCORES (2 features)
-        with composite_tab:
-            st.markdown("#### 📈 Composite Indicators")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                income_digital_interaction = st.slider(
-                    "Income-Digital Service Interaction", 
-                    0.0, 1.0, 0.3, 0.05,
-                    help="🏅 #4 most important feature (Weight: 260)\nMeasures integration between income and digital financial services"
-                )
-                
-                st.markdown("**Digital Integration Level**")
-                if income_digital_interaction > 0.7:
-                    st.success("High digital-financial integration")
-                elif income_digital_interaction > 0.4:
-                    st.warning("Moderate digital integration")
-                else:
-                    st.error("Low digital integration")
-            
-            with col2:
-                # Auto-calculate financial activity score from other inputs
-                calculated_score = (biz_loan_source + saved_any + borrowed_any + biz_loan) / 4
-                
-                financial_activity_score = st.slider(
-                    "Financial Activity Score", 
-                    0.0, 1.0, calculated_score, 0.05,
-                    help="🏅 #9 most important feature (Weight: 167)\nComposite measure of overall financial engagement"
-                )
-                
-                st.markdown("**Activity Level**")
-                if financial_activity_score > 0.6:
-                    st.success("High financial activity")
-                elif financial_activity_score > 0.3:
-                    st.warning("Moderate financial activity") 
-                else:
-                    st.error("Low financial activity")
-        
-        # ENHANCED SUBMIT SECTION
-        st.markdown("---")
-        col1, col2, col3 = st.columns([1, 2, 1])
-        
-        with col2:
-            submitted = st.form_submit_button(
-                "🚀 Generate AI Prediction",
-                type="primary",
-                use_container_width=True
-            )
-    
-    # PREDICTION PROCESSING
     if submitted:
-        # Input validation
-        validation_errors = []
-        if biz_loan > biz_loan_source:
-            validation_errors.append("Business loan cannot exceed loan source access")
-        if saved_for_purchase > saved_any:
-            validation_errors.append("Purchase savings cannot exceed total savings")
+        # Prepare inputs
+        user_inputs = {
+            'business_credit': business_credit,
+            'digital_payments': digital_payments,
+            'active_savings': active_savings,
+            'mobile_banking': mobile_banking,
+            'emergency_funds': emergency_funds
+        }
         
-        if validation_errors:
-            for error in validation_errors:
-                st.error(f"❌ {error}")
+        # Calculate inclusion score using ML model if available
+        inclusion_score = calculate_inclusion_score(user_inputs, region, income_group, 
+                                                   models_loaded, regression_model, feature_names)
+        
+        # Show model status
+        if models_loaded:
+            st.success("✅ Using advanced ML model (XGBoost) for prediction")
         else:
-            # Create input data dictionary for top 10 features
-            input_data = {
-                'biz_loan_source': biz_loan_source,
-                'saved_any': saved_any,
-                'borrowed_any': borrowed_any,
-                'income_digital_interaction': income_digital_interaction,
-                'biz_loan': biz_loan,
-                'demo_subgroup': demo_subgroup,
-                'saved_for_purchase': saved_for_purchase,
-                'region_cleaned': region_cleaned,
-                'financial_activity_score': financial_activity_score,
-                'saved_no_purpose': saved_no_purpose
+            st.info("ℹ️ Using statistical model - install ML libraries for enhanced accuracy")
+        
+        # Determine status
+        if inclusion_score >= 0.75:
+            status_color, status_emoji, status_text = "#27AE60", "✅", "Financially Well-Included"
+            status_desc = "You have strong financial inclusion with good access to services."
+        elif inclusion_score >= 0.60:
+            status_color, status_emoji, status_text = "#F39C12", "⚠️", "Moderately Included"
+            status_desc = "You have decent financial access but room for improvement."
+        elif inclusion_score >= 0.40:
+            status_color, status_emoji, status_text = "#FF6B35", "⚠️", "Partially Included"
+            status_desc = "You have basic financial access but significant gaps remain."
+        else:
+            status_color, status_emoji, status_text = "#E74C3C", "🚨", "Limited Financial Access"
+            status_desc = "You face major barriers to financial services and need support."
+        
+        # Display results
+        st.markdown(f"""
+        <div class="score-card" style="border-left: 6px solid {status_color};">
+            <h2 style="color: {status_color}; margin-top: 0;">{status_emoji} {status_text}</h2>
+            <h1 style="font-size: 3em; margin: 15px 0; color: {status_color};">{inclusion_score:.0%}</h1>
+            <p style="font-size: 1.1em; color: #636e72; margin-bottom: 0;">{status_desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Comparison with regional average
+        regional_avg = regional_df[regional_df['region'] == region]['inclusion_rate'].iloc[0]
+        income_avg = income_df[income_df['income_group'] == income_group]['inclusion_rate'].iloc[0]
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            diff_regional = inclusion_score - regional_avg
+            color = "#27AE60" if diff_regional > 0 else "#E74C3C"
+            arrow = "↗️" if diff_regional > 0 else "↘️"
+            st.markdown(f"""
+            <div class="metric-card">
+                <h4 style="color: #667eea; margin-top: 0;">vs Regional Average</h4>
+                <h2 style="color: {color}; margin: 10px 0;">{arrow} {diff_regional:+.1%}</h2>
+                <p style="color: #636e72;">Regional: {regional_avg:.0%}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            diff_income = inclusion_score - income_avg
+            color = "#27AE60" if diff_income > 0 else "#E74C3C"
+            arrow = "↗️" if diff_income > 0 else "↘️"
+            st.markdown(f"""
+            <div class="metric-card">
+                <h4 style="color: #667eea; margin-top: 0;">vs Income Group</h4>
+                <h2 style="color: {color}; margin: 10px 0;">{arrow} {diff_income:+.1%}</h2>
+                <p style="color: #636e72;">Income Group: {income_avg:.0%}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            global_avg = 0.581
+            diff_global = inclusion_score - global_avg
+            color = "#27AE60" if diff_global > 0 else "#E74C3C"
+            arrow = "↗️" if diff_global > 0 else "↘️"
+            st.markdown(f"""
+            <div class="metric-card">
+                <h4 style="color: #667eea; margin-top: 0;">vs Global Average</h4>
+                <h2 style="color: {color}; margin: 10px 0;">{arrow} {diff_global:+.1%}</h2>
+                <p style="color: #636e72;">Global: {global_avg:.0%}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Feature analysis radar chart
+        st.markdown("### 📊 Your Financial Profile")
+        
+        categories = ['Business Credit', 'Digital Payments', 'Active Savings', 'Mobile Banking', 'Emergency Funds']
+        user_values = [business_credit, digital_payments, active_savings, mobile_banking, emergency_funds]
+        
+        # Create radar chart
+        fig_radar = go.Figure()
+        
+        fig_radar.add_trace(go.Scatterpolar(
+            r=user_values,
+            theta=categories,
+            fill='toself',
+            name='Your Profile',
+            line_color='#667eea',
+            fillcolor='rgba(102,126,234,0.3)'
+        ))
+        
+        # Add regional average for comparison
+        regional_avg_values = [regional_avg] * 5  # Simplified - use regional average for all
+        fig_radar.add_trace(go.Scatterpolar(
+            r=regional_avg_values,
+            theta=categories,
+            fill='toself',
+            name='Regional Average',
+            line_color='#FF6B35',
+            fillcolor='rgba(255,107,53,0.1)'
+        ))
+        
+        fig_radar.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 1],
+                    tickformat='.0%'
+                )
+            ),
+            showlegend=True,
+            height=400
+        )
+        
+        st.plotly_chart(fig_radar, use_container_width=True)
+        
+        # Personalized recommendations
+        st.markdown("### 💡 Personalized Recommendations")
+        
+        recommendations = get_personalized_recommendations(inclusion_score, user_inputs, region)
+        
+        for i, rec in enumerate(recommendations):
+            priority_colors = {
+                'high': '#E74C3C',
+                'medium': '#F39C12',
+                'low': '#27AE60'
             }
             
-            # MAKE PREDICTION
-            if model_package:
-                try:
-                    prediction_result = make_optimized_prediction(model_package, input_data)
-                    display_enhanced_results(prediction_result, input_data, region_cleaned, demo_subgroup)
-                    
-                except Exception as e:
-                    st.error(f"Prediction error: {str(e)}")
-                    # Fallback calculation
-                    fallback_result = calculate_fallback_prediction(input_data)
-                    display_enhanced_results(fallback_result, input_data, region_cleaned, demo_subgroup)
-            else:
-                # Fallback prediction method
-                fallback_result = calculate_fallback_prediction(input_data)
-                display_enhanced_results(fallback_result, input_data, region_cleaned, demo_subgroup)
-
-
-
-
-
-
-
+            priority_icons = {
+                'high': '🔴',
+                'medium': '🟡',
+                'low': '🟢'
+            }
+            
+            color = priority_colors.get(rec['priority'], '#667eea')
+            icon = priority_icons.get(rec['priority'], '📌')
+            
+            st.markdown(f"""
+            <div class="recommendation" style="border-left-color: {color};">
+                <h4 style="margin-top: 0; color: {color};">{icon} {rec['title']}</h4>
+                <p style="margin-bottom: 0;">{rec['description']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Additional insights based on score
+        st.markdown("### 🎯 Next Steps")
+        
+        if inclusion_score >= 0.75:
+            st.success("""
+            **🌟 Excellent Financial Health!** You're in the top tier globally. Consider:
+            - Exploring investment opportunities
+            - Mentoring others in financial inclusion
+            - Advocating for financial services in your community
+            """)
+        elif inclusion_score >= 0.60:
+            st.info("""
+            **📈 Good Progress!** You're above average but can improve:
+            - Focus on your lowest-scoring areas from the radar chart
+            - Explore advanced financial products
+            - Build stronger emergency fund reserves
+            """)
+        elif inclusion_score >= 0.40:
+            st.warning("""
+            **⚡ Action Needed!** Key priorities:
+            - Start with mobile banking if available in your region
+            - Begin small but regular savings habits
+            - Explore microfinance or community lending options
+            """)
+        else:
+            st.error("""
+            **🚨 Urgent Support Needed!** Immediate steps:
+            - Contact local financial inclusion programs
+            - Start with basic mobile money services
+            - Seek community financial literacy support
+            - Focus on one service at a time to build confidence
+            """)
+        
+        # Impact potential
+        st.markdown("### 🌍 Your Impact Potential")
+        
+        if inclusion_score < regional_avg:
+            potential_gain = regional_avg - inclusion_score
+            st.markdown(f"""
+            <div class="result-card">
+                <h3 style="color: #667eea; margin-top: 0;">💪 Improvement Opportunity</h3>
+                <p>By reaching your regional average, you could improve by <strong>{potential_gain:.0%}</strong></p>
+                <p>This represents significant potential for economic empowerment and financial security.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            leadership_potential = inclusion_score - regional_avg
+            st.markdown(f"""
+            <div class="result-card">
+                <h3 style="color: #27AE60; margin-top: 0;">🏆 Community Leader</h3>
+                <p>You're <strong>{leadership_potential:.0%}</strong> above your regional average!</p>
+                <p>Consider sharing your knowledge and helping others access financial services.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #636e72; padding: 20px;">
-    <p><strong>FinScope Global - Optimized Model</strong> | Powered by Top 10 Features ML</p>
-    <p>Model: LightGBM | Accuracy: 91.3% | Features: 10 most predictive | Global sample: 8,476 adults</p>
+<div style="text-align: center; padding: 20px; color: #636e72;">
+    <p>🌍 <strong>FinScope Global</strong> - Empowering Financial Inclusion Through Data & AI</p>
+    <p style="font-size: 0.9em;">Built with Streamlit • Powered by Machine Learning • Data-Driven Insights</p>
 </div>
 """, unsafe_allow_html=True)
